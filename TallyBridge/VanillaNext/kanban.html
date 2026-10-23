@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/kanban.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: var(--bg-body);
+            color: var(--gray-900);
+            font-family: var(--font-sans);
+        }
+
+        .kanban-layout {
+            padding: 20px 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="kanban-layout">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">📋 Project Kanban</h1>
+                <p class="text-muted">Drag and drop cards to manage tasks.</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="index.html" class="btn btn-secondary">Go Back</a>
+                <button class="btn btn-primary">+ New Task</button>
+            </div>
+        </div>
+
+        <div class="kanban-board">
+            <!-- COL 1: TODO -->
+            <div class="kanban-col">
+                <div class="kanban-header">
+                    <span>To Do</span>
+                    <span class="badge badge-secondary">3</span>
+                </div>
+                <div class="kanban-items">
+                    <div class="kanban-card" draggable="true">
+                        <span class="kanban-tag tag-design">Design</span>
+                        <h4 class="font-bold mb-2">Create new logo options</h4>
+                        <p class="text-sm text-gray-500">Sketch 3 variations for the client review.</p>
+                        <div class="kanban-meta">
+                            <span>Due Tomorrow</span>
+                            <div class="flex -space-x-2">
+                                <div class="w-6 h-6 rounded-full bg-gray-300 border border-white"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-card" draggable="true">
+                        <span class="kanban-tag tag-dev">Frontend</span>
+                        <h4 class="font-bold mb-2">Fix navigation bug</h4>
+                        <p class="text-sm text-gray-500">Menu doesn't close on mobile click.</p>
+                        <div class="kanban-meta">
+                            <span>#BUG-402</span>
+                        </div>
+                    </div>
+                    <div class="kanban-card" draggable="true">
+                        <span class="kanban-tag tag-urgent">High Priority</span>
+                        <h4 class="font-bold mb-2">Server migration</h4>
+                        <div class="kanban-meta">
+                            <span>Pending Approval</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COL 2: IN PROGRESS -->
+            <div class="kanban-col">
+                <div class="kanban-header">
+                    <span>In Progress</span>
+                    <span class="badge badge-primary">2</span>
+                </div>
+                <div class="kanban-items">
+                    <div class="kanban-card" draggable="true">
+                        <span class="kanban-tag tag-dev">Backend</span>
+                        <h4 class="font-bold mb-2">API Integration</h4>
+                        <p class="text-sm text-gray-500">Connecting header to user endpoint.</p>
+                        <div class="kanban-meta">
+                            <span>40% Done</span>
+                            <div
+                                class="w-6 h-6 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center">
+                                JD</div>
+                        </div>
+                    </div>
+                    <div class="kanban-card" draggable="true">
+                        <span class="kanban-tag tag-design">Review</span>
+                        <h4 class="font-bold mb-2">Update Style Guide</h4>
+                        <div class="kanban-meta">
+                            <span>In Review</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COL 3: DONE -->
+            <div class="kanban-col">
+                <div class="kanban-header">
+                    <span>Completed</span>
+                    <span class="badge badge-success">2</span>
+                </div>
+                <div class="kanban-items">
+                    <div class="kanban-card" draggable="true">
+                        <span class="text-gray-400 line-through">Research competitors</span>
+                        <div class="kanban-meta">
+                            <span class="badge badge-success badge-dot">Done</span>
+                        </div>
+                    </div>
+                    <div class="kanban-card" draggable="true">
+                        <span class="text-gray-400 line-through">Initial Setup</span>
+                        <div class="kanban-meta">
+                            <span class="badge badge-success badge-dot">Done</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/Kanban.js"></script>
+</body>
+
+</html>

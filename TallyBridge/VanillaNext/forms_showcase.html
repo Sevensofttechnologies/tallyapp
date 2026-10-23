@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Forms Library - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/advanced-forms.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: var(--bg-body);
+            color: var(--gray-900);
+            font-family: var(--font-sans);
+        }
+
+        .showcase-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="showcase-container">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-bold">📋 Forms Library</h1>
+                <p class="text-muted">Production-ready form compositions.</p>
+            </div>
+            <a href="index.html" class="btn btn-secondary">← Back to Kit</a>
+        </div>
+
+        <!-- 1. WIZARDS -->
+        <div class="card p-8 mb-10">
+            <h3 class="text-xl font-bold mb-6">Multi-Step Wizard</h3>
+
+            <div class="wizard-nav">
+                <div class="wizard-step completed">
+                    <div class="wizard-dot">✓</div>
+                    <div class="wizard-label">Account</div>
+                </div>
+                <div class="wizard-step active">
+                    <div class="wizard-dot">2</div>
+                    <div class="wizard-label">Profile</div>
+                </div>
+                <div class="wizard-step">
+                    <div class="wizard-dot">3</div>
+                    <div class="wizard-label">Review</div>
+                </div>
+                <div class="wizard-step">
+                    <div class="wizard-dot">4</div>
+                    <div class="wizard-label">Finish</div>
+                </div>
+            </div>
+
+            <form>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-input" value="Pramit">
+                    </div>
+                    <div>
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-input">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-between">
+                    <button type="button" class="btn btn-secondary">Previous</button>
+                    <button type="button" class="btn btn-primary">Next Step</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2. FLOATING LABELS -->
+        <div class="card p-8 mb-10">
+            <h3 class="text-xl font-bold mb-6">Floating Labels (Material Style)</h3>
+            <p class="text-muted mb-4">Labels move up when typed in. Pure CSS.</p>
+
+            <div class="form-floating">
+                <input type="email" class="form-input" id="floatEmail" placeholder="name@example.com">
+                <label for="floatEmail">Email address</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" class="form-input" id="floatPass" placeholder="Password">
+                <label for="floatPass">Password</label>
+            </div>
+        </div>
+
+        <!-- 3. INPUT GROUPS -->
+        <div class="card p-8 mb-10">
+            <h3 class="text-xl font-bold mb-6">Input Groups</h3>
+
+            <div class="mb-4">
+                <label class="form-label">Your Vanity URL</label>
+                <div class="input-group">
+                    <span class="input-group-text">https://vanillanext.com/users/</span>
+                    <input type="text" class="form-input" placeholder="username">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Price</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="text" class="form-input" placeholder="0.00">
+                    <span class="input-group-text">.00</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Search</label>
+                <div class="input-group">
+                    <input type="text" class="form-input" placeholder="Search...">
+                    <button class="btn btn-primary">Go</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. DATE PICKER -->
+        <div class="card p-8 mb-10">
+            <h3 class="text-xl font-bold mb-6">Custom Date Picker</h3>
+            <p class="text-muted mb-4">Pure Vanilla JS Implementation. No libraries.</p>
+
+            <div class="max-w-xs">
+                <label class="form-label">Select Date</label>
+                <input type="text" class="form-input" data-toggle="datepicker" placeholder="YYYY-MM-DD" readonly>
+            </div>
+        </div>
+
+        <!-- 4. FILE UPLOAD -->
+        <div class="card p-8">
+            <h3 class="text-xl font-bold mb-6">File Upload</h3>
+
+            <div class="file-drop-zone">
+                <span class="file-icon">📂</span>
+                <p class="font-bold text-gray-700">Click to upload or drag and drop</p>
+                <p class="text-sm text-muted">SVG, PNG, JPG or GIF (max. 3MB)</p>
+                <input type="file" class="hidden">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/DatePicker.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>

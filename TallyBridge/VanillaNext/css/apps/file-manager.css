@@ -1,0 +1,147 @@
+/* ==========================================================================
+   FILE MANAGER APP
+   ========================================================================== */
+
+.file-manager-layout {
+    display: flex;
+    height: calc(100vh - 64px);
+    /* Subtract header */
+    overflow: hidden;
+}
+
+/* Sidebar Tree */
+.fm-sidebar {
+    width: 240px;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+    padding: var(--space-4);
+    overflow-y: auto;
+}
+
+.fm-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: var(--space-3);
+    margin-top: var(--space-4);
+}
+
+.fm-section-title:first-child {
+    margin-top: 0;
+}
+
+.fm-tree-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.fm-tree-item:hover {
+    background: var(--gray-100);
+}
+
+.fm-tree-item.active {
+    background: var(--primary-50);
+    color: var(--primary-600);
+    font-weight: 600;
+}
+
+/* Main Content area */
+.fm-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-body);
+}
+
+.fm-toolbar {
+    height: 56px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    color: var(--gray-500);
+}
+
+.breadcrumb-item.active {
+    color: var(--gray-900);
+    font-weight: 600;
+}
+
+.breadcrumb-separator {
+    font-size: 0.75rem;
+}
+
+.fm-grid {
+    padding: var(--space-5);
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-4);
+}
+
+/* File Card */
+.file-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.file-card:hover {
+    border-color: var(--primary-400);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.file-card.selected {
+    border-color: var(--primary-500);
+    background: var(--primary-50);
+}
+
+.file-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-2);
+    display: block;
+}
+
+.file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-meta {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+/* Folder Card variant */
+.file-card.folder .file-icon {
+    color: var(--warning-500);
+}

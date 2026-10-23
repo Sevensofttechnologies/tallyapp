@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="manifest" href="manifest.json">
+  <title>Audit Logs - VanillaNext</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/widgets.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+  <link rel="stylesheet" href="css/utils/customizer.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Page-specific styles only */
+  </style>
+</head>
+
+<body>
+  <!-- PWA Banners -->
+  <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+  <div id="install-banner" class="install-banner">
+    <div class="install-banner-content">
+      <div class="install-banner-title">Install VanillaNext</div>
+      <div class="install-banner-text">Add to home screen for quick access</div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+      <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+    </div>
+  </div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div class="admin-layout" id="app">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="sidebar-brand">⚡ VanillaNext</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+        <a href="users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+        <a href="audit.html" class="sidebar-link active admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+        <a href="tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+        <a href="reports/vouchers.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Reports</a>
+        <a href="companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span>
+          Companies</a>
+        <a href="permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span>
+          Permissions</a>
+
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+        <a href="email-settings.html" class="sidebar-link admin-only"><span class="sidebar-icon">✉️</span> Email Settings</a>
+        <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+        <a href="#" onclick="Auth.logout()" class="sidebar-link text-danger"><span
+            class="sidebar-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200">
+        <a href="profile.html" class="flex items-center gap-3 text-gray-900 hover:text-primary-600 transition">
+          <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold"
+            id="user-initials">U</div>
+          <div class="text-sm">
+            <div class="font-bold" id="user-name">User</div>
+            <div class="text-muted text-xs" id="user-role-display">Role</div>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="flex items-center gap-4">
+          <button class="btn btn-ghost btn-sm lg:hidden" onclick="toggleSidebar()">☰</button>
+          <h2 class="text-lg font-bold">Audit Logs</h2>
+        </div>
+        <div class="flex gap-4 items-center">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="loadAuditLogs()">🔄 Refresh</button>
+          </div>
+          <button id="theme-toggle" data-toggle="theme" class="btn btn-ghost btn-sm">🌙</button>
+        </div>
+      </header>
+
+      <div class="p-4 w-full">
+
+        <!-- Filters -->
+        <div class="card p-6 mb-6">
+          <h3 class="font-bold mb-4 text-sm uppercase text-muted">Filters</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <select id="filter-action" class="form-input" onchange="applyFilters()">
+              <option value="">All Actions</option>
+              <option value="CREATE">Created</option>
+              <option value="UPDATE">Updated</option>
+              <option value="DELETE">Deleted</option>
+              <option value="LOGIN">Login</option>
+            </select>
+            <select id="filter-resource" class="form-input" onchange="applyFilters()">
+              <option value="">All Resources</option>
+              <option value="user">User</option>
+              <option value="company">Company</option>
+              <option value="auth">Auth</option>
+            </select>
+            <input type="date" id="filter-from" class="form-input" onchange="applyFilters()">
+            <input type="date" id="filter-to" class="form-input" onchange="applyFilters()">
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card p-0">
+          <div id="audit-table"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="modal-details" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Audit Details</h2>
+      <button class="modal-close" onclick="Modal.close('modal-details')">&times;</button>
+    </div>
+    <div class="modal-body" id="audit-details-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-details')">Close</button>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script>window.VanillaNext = window.VanillaNext || {};</script>
+  <script src="js/core/Component.js"></script>
+  <script src="js/core/ThemeManager.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/datatable.js"></script>
+
+  <script>
+    // Init Theme
+    if (typeof ThemeManager !== 'undefined') ThemeManager.init();
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    let auditTable;
+    let allAuditData = [];
+
+    async function loadAuditLogs() {
+      try {
+        auditTable = new DataTable('#audit-table', {
+          columns: [
+            { key: 'created_at', label: 'Timestamp', render: (v) => Utils.formatDate(v, 'long') },
+            { key: 'user_email', label: 'User' },
+            {
+              key: 'action', label: 'Action', render: (v) => {
+                const colors = { CREATE: 'success', UPDATE: 'warning', DELETE: 'danger', LOGIN: 'info' };
+                return `<span class="badge badge-${colors[v] || 'gray'}">${v}</span>`;
+              }
+            },
+            { key: 'resource_type', label: 'Resource', render: (v) => Utils.capitalize(v || '') },
+            { key: 'ip_address', label: 'IP Address' },
+            {
+              key: 'actions', label: '', render: (v, row) =>
+                `<button class="btn btn-xs btn-outline" onclick="viewDetails(${row.id})">View</button>`
+            }
+          ],
+          perPage: 15,
+          searchable: true,
+          emptyMessage: 'No audit logs found',
+          classList: {
+            table: 'table w-full',
+            thead: 'bg-surface border-b',
+            tbody: 'text-sm'
+          }
+        });
+
+        auditTable.setLoading(true);
+
+        const response = await API.get('/audit');
+        if (response.success && response.data) {
+          allAuditData = response.data;
+          auditTable.setLoading(false);
+          auditTable.setData(allAuditData);
+        }
+      } catch (error) {
+        console.warn('API /audit failed, using mock data');
+        const mockData = generateMockAuditData();
+        allAuditData = mockData;
+        auditTable.setLoading(false);
+        auditTable.setData(mockData);
+      }
+    }
+
+    function generateMockAuditData() {
+      const actions = ['CREATE', 'UPDATE', 'DELETE', 'LOGIN'];
+      const resources = ['user', 'company', 'auth'];
+      const users = ['admin@test.com', 'manager@test.com', 'user@test.com'];
+
+      return Array.from({ length: 50 }, (_, i) => ({
+        id: i + 1,
+        created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        user_email: users[Math.floor(Math.random() * users.length)],
+        action: actions[Math.floor(Math.random() * actions.length)],
+        resource_type: resources[Math.floor(Math.random() * resources.length)],
+        resource_id: Math.floor(Math.random() * 100) + 1,
+        ip_address: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        old_values: { name: 'Old Value' },
+        new_values: { name: 'New Value' }
+      }));
+    }
+
+    function applyFilters() {
+      const action = document.getElementById('filter-action').value;
+      const resource = document.getElementById('filter-resource').value;
+      const from = document.getElementById('filter-from').value;
+      const to = document.getElementById('filter-to').value;
+
+      let filtered = [...allAuditData];
+
+      if (action) filtered = filtered.filter(a => a.action === action);
+      if (resource) filtered = filtered.filter(a => a.resource_type === resource);
+      if (from) filtered = filtered.filter(a => new Date(a.created_at) >= new Date(from));
+      if (to) filtered = filtered.filter(a => new Date(a.created_at) <= new Date(to + 'T23:59:59'));
+
+      auditTable.setData(filtered);
+    }
+
+    function viewDetails(id) {
+      const audit = allAuditData.find(a => a.id === id);
+      if (!audit) return;
+
+      document.getElementById('audit-details-content').innerHTML = `
+                <div class="grid gap-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="font-bold">Timestamp:</div> <div>${Utils.formatDate(audit.created_at, 'long')}</div>
+                    <div class="font-bold">User:</div> <div>${audit.user_email}</div>
+                    <div class="font-bold">Action:</div> <div><span class="badge badge-primary">${audit.action}</span></div>
+                    <div class="font-bold">Resource:</div> <div>${Utils.capitalize(audit.resource_type)} #${audit.resource_id}</div>
+                    <div class="font-bold">IP:</div> <div>${audit.ip_address}</div>
+                </div>
+                ${audit.old_values ? `<div><div class="font-bold mb-1">Old Values:</div><div class="bg-gray-900 text-white p-3 rounded font-mono text-xs overflow-auto">${JSON.stringify(audit.old_values, null, 2)}</div></div>` : ''}
+                ${audit.new_values ? `<div><div class="font-bold mb-1">New Values:</div><div class="bg-gray-900 text-white p-3 rounded font-mono text-xs overflow-auto">${JSON.stringify(audit.new_values, null, 2)}</div></div>` : ''}
+                </div>
+            `;
+      Modal.open('modal-details');
+    }
+
+    function exportCSV() {
+      const headers = ['Timestamp', 'User', 'Action', 'Resource', 'Resource ID', 'IP Address'];
+      const rows = allAuditData.map(a => [
+        a.created_at, a.user_email, a.action, a.resource_type, a.resource_id, a.ip_address
+      ]);
+
+      let csv = headers.join(',') + '\n';
+      rows.forEach(row => { csv += row.join(',') + '\n'; });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Auth.isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load User Info for Sidebar
+      const user = Auth.getUser();
+      if (user) {
+        document.getElementById('user-name').textContent = `${user.first_name} ${user.last_name}`;
+        document.getElementById('user-role-display').textContent = Utils.capitalize(user.role);
+        document.getElementById('user-initials').textContent = Utils.getInitials(`${user.first_name} ${user.last_name}`);
+      }
+
+      loadAuditLogs();
+    });
+  </script>
+  <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

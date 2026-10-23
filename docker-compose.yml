@@ -1,0 +1,81 @@
+# TallyBots - Docker Compose Configuration
+# Runs TallyBridge and TallyInsight as microservices
+
+version: '3.8'
+
+services:
+  # TallyBridge - Main Application (Auth, Users, Companies)
+  tallybridge:
+    build:
+      context: ./TallyBridge
+      dockerfile: Dockerfile
+    container_name: tallybridge
+    ports:
+      - "8501:8501"
+    environment:
+      - APP_NAME=TallyBridge
+      - DEBUG=false
+      - ENVIRONMENT=production
+      - DATABASE_URL=sqlite:///./data/tallybridge.db
+      - SECRET_KEY=${SECRET_KEY:-tallybots-super-secret-key-change-in-production-2026}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - TALLY_SERVICE_URL=http://tallyinsight:8000
+      - TALLY_SERVICE_ENABLED=true
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000,http://localhost:8501
+    volumes:
+      - tallybridge_data:/app/data
+    depends_on:
+      - tallyinsight
+    networks:
+      - tallybots_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # TallyInsight - Tally ERP Sync Microservice
+  tallyinsight:
+    build:
+      context: ./TallyInsight
+      dockerfile: Dockerfile
+    container_name: tallyinsight
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DATABASE_PATH=/app/data/tally.db
+      - SECRET_KEY=${SECRET_KEY:-tallybots-super-secret-key-change-in-production-2026}
+      - ALGORITHM=HS256
+      - TALLYBRIDGE_URL=http://tallybridge:8501
+      - TALLY_SERVER=${TALLY_SERVER:-host.docker.internal}
+      - TALLY_PORT=${TALLY_PORT:-9000}
+      - LOG_LEVEL=INFO
+    volumes:
+      - tallyinsight_data:/app/data
+      - tallyinsight_logs:/app/logs
+    networks:
+      - tallybots_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  tallybridge_data:
+    driver: local
+  tallyinsight_data:
+    driver: local
+  tallyinsight_logs:
+    driver: local
+
+networks:
+  tallybots_network:
+    driver: bridge

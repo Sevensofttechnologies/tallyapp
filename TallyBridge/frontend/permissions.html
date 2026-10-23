@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="manifest.json">
+    <title>Role & Permissions - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/admin-layout.css">
+    <link rel="stylesheet" href="css/pages/permissions.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-body">
+    <!-- PWA Banners -->
+    <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner-content">
+            <div class="install-banner-title">Install VanillaNext</div>
+            <div class="install-banner-text">Add to home screen for quick access</div>
+        </div>
+        <div class="install-banner-actions">
+            <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+            <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+                <a href="users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <a href="tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+                <a href="reports/vouchers.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Reports</a>
+                <a href="companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span>
+                    Companies</a>
+                <a href="permissions.html" class="sidebar-link active super-admin-only"><span
+                        class="sidebar-icon">🗝️</span> Permissions</a>
+
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+                <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="#" onclick="Auth.logout()" class="sidebar-link text-danger"><span
+                        class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <a href="profile.html" class="flex items-center gap-3 text-gray-900 hover:text-primary-600 transition">
+                    <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold"
+                        id="user-initials">U</div>
+                    <div class="text-sm">
+                        <div class="font-bold" id="user-name">User</div>
+                        <div class="text-muted text-xs" id="user-role-display">Role</div>
+                    </div>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="flex items-center gap-4">
+                    <button class="btn btn-ghost btn-sm lg:hidden" onclick="toggleSidebar()">☰</button>
+                    <h2 class="text-lg font-bold">Role & Permissions</h2>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <button id="theme-toggle" data-toggle="theme" class="btn btn-ghost btn-sm">🌙</button>
+                </div>
+            </header>
+
+            <div class="p-4 w-full">
+                <div class="permissions-layout">
+                    <!-- Role Selector -->
+                    <div class="role-sidebar">
+                        <div class="role-sidebar-header">
+                            <h3 class="text-sm font-bold uppercase text-muted">Select Role</h3>
+                        </div>
+                        <div class="role-list" id="role-list">
+                            <!-- Roles will be loaded here -->
+                            <div class="role-item active" onclick="selectRole('super_admin', this)">
+                                <span class="role-icon">👑</span>
+                                <div class="role-info">
+                                    <span class="role-name">Super Admin</span>
+                                    <span class="role-desc">Full system access</span>
+                                </div>
+                            </div>
+                            <div class="role-item" onclick="selectRole('admin', this)">
+                                <span class="role-icon">🛡️</span>
+                                <div class="role-info">
+                                    <span class="role-name">Admin</span>
+                                    <span class="role-desc">Company management</span>
+                                </div>
+                            </div>
+                            <div class="role-item" onclick="selectRole('manager', this)">
+                                <span class="role-icon">💼</span>
+                                <div class="role-info">
+                                    <span class="role-name">Manager</span>
+                                    <span class="role-desc">Operational access</span>
+                                </div>
+                            </div>
+                            <div class="role-item" onclick="selectRole('user', this)">
+                                <span class="role-icon">👤</span>
+                                <div class="role-info">
+                                    <span class="role-name">User</span>
+                                    <span class="role-desc">Standard access</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Permission Grid -->
+                    <div class="permission-matrix-card">
+                        <div class="p-6 border-bottom bg-gray-50 flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold" id="current-role-title">Super Admin Permissions</h3>
+                                <p class="text-sm text-muted">Manage resource-level access for this role</p>
+                            </div>
+                            <div class="badge badge-primary" id="scope-badge">Global Scope</div>
+                        </div>
+                        <div class="flex-1 overflow-auto">
+                            <table class="permission-table">
+                                <thead>
+                                    <tr>
+                                        <th>Resource</th>
+                                        <th>Read</th>
+                                        <th>Create</th>
+                                        <th>Update</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="permission-grid-body">
+                                    <!-- Permissions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/components/toast.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        let currentRole = 'super_admin';
+        let allPermissions = [];
+        let rolePermissions = [];
+
+        async function init() {
+            await Auth.requireAuth();
+            if (!Auth.hasRole('super_admin')) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Update User Info
+            const user = Auth.getUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.full_name;
+                document.getElementById('user-role-display').textContent = user.role;
+                document.getElementById('user-initials').textContent = user.first_name.charAt(0) + user.last_name.charAt(0);
+            }
+
+            Auth.applyRoleVisibility();
+            await loadInitialData();
+        }
+
+        async function loadInitialData() {
+            try {
+                const response = await API.permissions.list();
+                allPermissions = response.data;
+                await loadRolePermissions(currentRole);
+            } catch (error) {
+                Toast.error('Failed to load permissions');
+            }
+        }
+
+        async function loadRolePermissions(role) {
+            try {
+                const response = await API.permissions.getByRole(role);
+                rolePermissions = response.data;
+                renderPermissionGrid();
+            } catch (error) {
+                Toast.error('Failed to load role permissions');
+            }
+        }
+
+        function renderPermissionGrid() {
+            const tbody = document.getElementById('permission-grid-body');
+
+            // Group permissions by resource
+            const resources = [...new Set(allPermissions.map(p => p.resource))];
+            const actions = ['read', 'create', 'update', 'delete'];
+
+            tbody.innerHTML = '';
+
+            resources.forEach(res => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><span class="resource-name">${res.charAt(0).toUpperCase() + res.slice(1)}</span></td>`;
+
+                actions.forEach(action => {
+                    const perm = allPermissions.find(p => p.resource === res && p.action === action);
+                    const td = document.createElement('td');
+
+                    if (perm) {
+                        const isGranted = rolePermissions.some(rp => rp.permission_id === perm.id && rp.granted);
+                        const isDisabled = currentRole === 'super_admin'; // Super admin permissions are immutable usually
+
+                        td.innerHTML = `
+              <label class="perm-toggle">
+                <input type="checkbox" ${isGranted ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} 
+                       onchange="togglePermission(${perm.id}, this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            `;
+                    } else {
+                        td.innerHTML = '<span class="text-muted opacity-30">-</span>';
+                    }
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function selectRole(role, element) {
+            currentRole = role;
+
+            // Update UI
+            document.querySelectorAll('.role-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('current-role-title').textContent = element.querySelector('.role-name').textContent + ' Permissions';
+
+            await loadRolePermissions(role);
+        }
+
+        async function togglePermission(permissionId, isChecked) {
+            try {
+                if (isChecked) {
+                    await API.permissions.assign(permissionId, currentRole);
+                    Toast.success('Permission granted');
+                } else {
+                    await API.permissions.revoke(permissionId, currentRole);
+                    Toast.success('Permission revoked');
+                }
+                // Refresh local state
+                await loadRolePermissions(currentRole);
+            } catch (error) {
+                Toast.error(error.message || 'Update failed');
+                renderPermissionGrid(); // Revert UI
+            }
+        }
+
+        const toggleSidebar = () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        };
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

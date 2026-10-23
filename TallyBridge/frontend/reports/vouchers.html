@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher Report - TallyBridge</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="../css/voucher-modal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 180px; background: var(--bg-surface); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; z-index: 50; }
+        .admin-main { flex: 1; margin-left: 180px; background: var(--bg-body); display: flex; flex-direction: column; }
+        .sidebar-brand { height: 48px; display: flex; align-items: center; padding: 0 16px; font-weight: 800; font-size: 0.9rem; color: var(--primary-600); border-bottom: 1px solid var(--border-color); }
+        .sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+        .sidebar-link { display: flex; align-items: center; padding: 6px 16px; color: var(--gray-600); font-weight: 500; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+        .sidebar-link:hover, .sidebar-link.active { background: var(--primary-50); color: var(--primary-600); border-right: 3px solid var(--primary-600); }
+        .sidebar-icon { width: 16px; text-align: center; margin-right: 8px; }
+        .sidebar-section { font-size: 0.7rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; padding: 12px 16px 4px; }
+        .sidebar-submenu { display: none; background: var(--gray-50); }
+        .sidebar-submenu.show { display: block; }
+        .sidebar-submenu a { display: block; padding: 5px 16px 5px 40px; font-size: 0.75rem; color: var(--gray-600); text-decoration: none; }
+        .sidebar-submenu a:hover, .sidebar-submenu a.active { color: var(--primary-600); background: var(--primary-50); }
+        .submenu-toggle { cursor: pointer; }
+        .submenu-toggle .arrow { margin-left: auto; font-size: 0.6rem; transition: transform 0.2s; }
+        .submenu-toggle.open .arrow { transform: rotate(180deg); }
+        .admin-header { height: 48px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; z-index: 40; }
+        .content-area { padding: 16px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+        .stat-card { background: white; border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .stat-icon.sales { background: #dcfce7; color: #16a34a; }
+        .stat-icon.purchase { background: #dbeafe; color: #2563eb; }
+        .stat-icon.payment { background: #fee2e2; color: #dc2626; }
+        .stat-icon.receipt { background: #d1fae5; color: #059669; }
+        .stat-value { font-size: 1.25rem; font-weight: 700; }
+        .stat-label { font-size: 0.75rem; color: var(--gray-500); }
+        .filters-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .filter-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+        .filter-group label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 4px; color: var(--gray-600); }
+        .filter-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .quick-filters { display: flex; gap: 4px; margin-left: auto; }
+        .btn-chip { padding: 4px 12px; background: var(--gray-100); border: none; border-radius: 16px; font-size: 0.75rem; cursor: pointer; }
+        .btn-chip:hover, .btn-chip.active { background: var(--primary-600); color: white; }
+        .table-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--gray-200); }
+        .table-header h3 { font-size: 0.9rem; font-weight: 600; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--gray-100); font-size: 0.75rem; }
+        .data-table th { background: var(--gray-50); font-weight: 600; font-size: 0.65rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; }
+        .data-table tbody tr:hover { background: var(--gray-50); }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .voucher-type-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+        .voucher-type-tag.sales { background: #dcfce7; color: #16a34a; }
+        .voucher-type-tag.purchase { background: #dbeafe; color: #2563eb; }
+        .voucher-type-tag.payment { background: #fee2e2; color: #dc2626; }
+        .voucher-type-tag.receipt { background: #d1fae5; color: #059669; }
+        .voucher-type-tag.journal { background: #f3e8ff; color: #9333ea; }
+        .voucher-type-tag.contra { background: #fef3c7; color: #d97706; }
+        .action-btn { padding: 4px 8px; background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+        .action-btn:hover { background: var(--gray-200); }
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--gray-200); font-size: 0.8rem; }
+        .pagination { display: flex; gap: 4px; }
+        .pagination button { width: 28px; height: 28px; border: 1px solid var(--gray-200); background: white; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .pagination button.active { background: var(--primary-600); color: white; border-color: var(--primary-600); }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .badge { background: var(--gray-100); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+        .loading-cell { text-align: center; padding: 40px !important; color: var(--gray-500); }
+        @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .filter-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .admin-sidebar { display: none; } .admin-main { margin-left: 0; } .stats-grid, .filter-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar - Same as Dashboard -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="../dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <div class="sidebar-section">Management</div>
+                <a href="../users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="../audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <a href="../tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+                
+                <!-- Reports with Dropdown -->
+                <a href="#" class="sidebar-link submenu-toggle open" onclick="toggleReportsMenu(event)">
+                    <span class="sidebar-icon">📋</span> Reports <span class="arrow">▼</span>
+                </a>
+                <div class="sidebar-submenu show" id="reportsSubmenu">
+                    <a href="#" class="submenu-toggle" onclick="toggleVoucherMenu(event)">📄 Voucher <span class="arrow" style="float:right">▼</span></a>
+                    <div class="sidebar-submenu show" id="voucherSubmenu" style="padding-left: 12px;">
+                        <a href="#" class="active" data-type="Sales">Sales</a>
+                        <a href="#" data-type="Purchase">Purchase</a>
+                        <a href="#" data-type="Payment">Payment</a>
+                        <a href="#" data-type="Receipt">Receipt</a>
+                        <a href="#" data-type="Journal">Journal</a>
+                        <a href="#" data-type="Contra">Contra</a>
+                    </div>
+                    <a href="#" class="submenu-toggle" onclick="toggleOutstandingMenu(event)">⚖️ Outstanding <span class="arrow" style="float:right">▶</span></a>
+                    <div class="sidebar-submenu" id="outstandingSubmenu" style="padding-left: 12px;">
+                        <a href="outstanding.html?type=receivable">Receivable</a>
+                        <a href="outstanding.html?type=payable">Payable</a>
+                    </div>
+                    <a href="ledger.html">📖 Ledger</a>
+                </div>
+                
+                <a href="../companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span> Companies</a>
+                <a href="../permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span> Permissions</a>
+                <div class="sidebar-section">Settings</div>
+                <a href="../profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="#" onclick="logout()" class="sidebar-link" style="color: var(--danger)"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <h2 style="font-size: 1rem; font-weight: 600;">📄 Voucher Report</h2>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <select id="companySelect" class="form-input" style="width: 200px; font-size: 0.8rem;" onchange="changeCompany()">
+                        <option value="">Select Company...</option>
+                    </select>
+                    <input type="text" id="globalSearch" class="form-input" placeholder="Search vouchers..." style="width: 200px; font-size: 0.8rem;" oninput="filterVouchers()">
+                    <button class="btn btn-sm" onclick="refreshData()" title="Refresh">🔄</button>
+                    <button class="btn btn-sm" onclick="exportToExcel()" title="Export">📥</button>
+                </div>
+            </header>
+
+            <div class="content-area">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon sales"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalSales">₹0</span>
+                        <span class="stat-label">Total Sales</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purchase"><i class="fas fa-truck"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalPurchase">₹0</span>
+                        <span class="stat-label">Total Purchase</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon payment"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalPayment">₹0</span>
+                        <span class="stat-label">Total Payment</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon receipt"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalReceipt">₹0</span>
+                        <span class="stat-label">Total Receipt</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-card">
+                <div class="filters-header">
+                    <h3><i class="fas fa-filter"></i> Filters</h3>
+                    <button class="btn btn-text" onclick="toggleFilters()">
+                        <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
+                    </button>
+                </div>
+                <div class="filters-body" id="filtersBody">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>From Date</label>
+                            <input type="date" id="fromDate" class="form-input">
+                        </div>
+                        <div class="filter-group">
+                            <label>To Date</label>
+                            <input type="date" id="toDate" class="form-input">
+                        </div>
+                        <div class="filter-group">
+                            <label>Voucher Type</label>
+                            <select id="voucherType" class="form-select">
+                                <option value="">All Types</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Purchase">Purchase</option>
+                                <option value="Payment">Payment</option>
+                                <option value="Receipt">Receipt</option>
+                                <option value="Journal">Journal</option>
+                                <option value="Contra">Contra</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Party Name</label>
+                            <input type="text" id="partyFilter" class="form-input" placeholder="Filter by party...">
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-search"></i> Apply Filters
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetFilters()">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                        <div class="quick-filters">
+                            <button class="btn btn-chip" onclick="setQuickFilter('today')">Today</button>
+                            <button class="btn btn-chip" onclick="setQuickFilter('week')">This Week</button>
+                            <button class="btn btn-chip" onclick="setQuickFilter('month')">This Month</button>
+                            <button class="btn btn-chip active" onclick="setQuickFilter('year')">This Year</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vouchers Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3><i class="fas fa-list"></i> Voucher Transactions</h3>
+                    <div class="table-info">
+                        <span class="badge" id="voucherCount">0 vouchers</span>
+                        <select id="pageSize" class="form-select-sm" onchange="changePageSize()">
+                            <option value="25">25 per page</option>
+                            <option value="50" selected>50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="vouchersTable">
+                        <thead>
+                            <tr>
+                                <th data-sort="date" style="cursor:pointer">DATE <span class="sort-icon">↕</span></th>
+                                <th data-sort="voucher_type" style="cursor:pointer">TYPE <span class="sort-icon">↕</span></th>
+                                <th>VOUCHER NO.</th>
+                                <th data-sort="party_name" style="cursor:pointer">PARTY NAME <span class="sort-icon">↕</span></th>
+                                <th class="text-right" data-sort="amount" style="cursor:pointer">AMOUNT <span class="sort-icon">↕</span></th>
+                                <th class="text-center">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vouchersTableBody">
+                            <tr>
+                                <td colspan="6" class="loading-cell">
+                                    <div class="loader"><i class="fas fa-spinner fa-spin"></i> Loading vouchers...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries
+                    </div>
+                    <div class="pagination" id="pagination"></div>
+                </div>
+            </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Voucher Detail Modal -->
+    <div class="vm-backdrop" id="vmBackdrop" onclick="closeModal()"></div>
+    <div class="vm-modal" id="vmModal">
+        <div class="vm-header">
+            <div class="vm-title">
+                <span class="vm-type-badge" id="modalVoucherType">Sales</span>
+                <h2>Voucher #<span id="modalVoucherNumber"></span></h2>
+            </div>
+            <button class="vm-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="vm-body">
+            <div class="vm-info-grid">
+                <div class="vm-info-item"><label>Date</label><span id="modalDate"></span></div>
+                <div class="vm-info-item"><label>Party</label><span id="modalParty"></span></div>
+                <div class="vm-info-item"><label>Reference No.</label><span id="modalRefNo"></span></div>
+                <div class="vm-info-item"><label>Reference Date</label><span id="modalRefDate"></span></div>
+                <div class="vm-info-item full-width"><label>Narration</label><span id="modalNarration"></span></div>
+            </div>
+            
+            <div class="vm-tabs">
+                <button class="vm-tab active" data-tab="ledger" onclick="showModalTab('ledger')"><i class="fas fa-book"></i> Ledger Entries</button>
+                <button class="vm-tab" data-tab="inventory" onclick="showModalTab('inventory')"><i class="fas fa-boxes"></i> Items <span class="vm-tab-count" id="itemCount">0</span></button>
+                <button class="vm-tab" data-tab="bills" onclick="showModalTab('bills')"><i class="fas fa-file-invoice-dollar"></i> Bills <span class="vm-tab-count" id="billCount">0</span></button>
+                <button class="vm-tab" data-tab="bank" onclick="showModalTab('bank')"><i class="fas fa-university"></i> Bank <span class="vm-tab-count" id="bankCount">0</span></button>
+            </div>
+            
+            <div class="vm-tab-content active" id="ledgerTab">
+                <table class="vm-table">
+                    <thead><tr><th>Ledger</th><th class="text-right">Debit</th><th class="text-right">Credit</th></tr></thead>
+                    <tbody id="ledgerEntries"></tbody>
+                    <tfoot><tr class="total-row"><td><strong>Total</strong></td><td class="text-right"><strong id="totalDebit">0.00</strong></td><td class="text-right"><strong id="totalCredit">0.00</strong></td></tr></tfoot>
+                </table>
+            </div>
+            
+            <div class="vm-tab-content" id="inventoryTab">
+                <table class="vm-table">
+                    <thead><tr><th>Item</th><th class="text-right">Qty</th><th class="text-right">Rate</th><th class="text-right">Amount</th><th>Godown</th></tr></thead>
+                    <tbody id="inventoryItems"></tbody>
+                </table>
+            </div>
+            
+            <div class="vm-tab-content" id="billsTab">
+                <table class="vm-table">
+                    <thead><tr><th>Bill Name</th><th>Type</th><th class="text-right">Amount</th></tr></thead>
+                    <tbody id="billAllocations"></tbody>
+                </table>
+            </div>
+            
+            <div class="vm-tab-content" id="bankTab">
+                <table class="vm-table">
+                    <thead><tr><th>Type</th><th>Instrument No.</th><th>Date</th><th>Bank</th><th class="text-right">Amount</th></tr></thead>
+                    <tbody id="bankDetails"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="vm-footer">
+            <button class="vm-btn vm-btn-secondary" onclick="printVoucher()"><i class="fas fa-print"></i> Print</button>
+            <button class="vm-btn vm-btn-primary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        // Sidebar menu toggle functions
+        function toggleReportsMenu(e) {
+            e.preventDefault();
+            const toggle = e.currentTarget;
+            const submenu = document.getElementById('reportsSubmenu');
+            toggle.classList.toggle('open');
+            submenu.classList.toggle('show');
+        }
+        function toggleVoucherMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('voucherSubmenu');
+            submenu.classList.toggle('show');
+            const arrow = e.currentTarget.querySelector('.arrow');
+            arrow.textContent = submenu.classList.contains('show') ? '▼' : '▶';
+        }
+        function toggleOutstandingMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('outstandingSubmenu');
+            submenu.classList.toggle('show');
+            const arrow = e.currentTarget.querySelector('.arrow');
+            arrow.textContent = submenu.classList.contains('show') ? '▼' : '▶';
+        }
+        function logout() {
+            localStorage.removeItem('access_token');
+            window.location.href = '../login.html';
+        }
+        
+        // Voucher type click handlers
+        document.querySelectorAll('#voucherSubmenu a[data-type]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('#voucherSubmenu a').forEach(a => a.classList.remove('active'));
+                link.classList.add('active');
+                const type = link.dataset.type;
+                document.getElementById('voucherType').value = type;
+                if (typeof loadVouchers === 'function') loadVouchers();
+            });
+        });
+    </script>
+    <script src="../js/reports/common.js"></script>
+    <script src="../js/reports/vouchers.js"></script>
+</body>
+</html>

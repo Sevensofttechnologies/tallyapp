@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - AppStarter</title>
+    <link rel="stylesheet" href="/frontend/website/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/frontend/website/" class="nav-logo">
+                <span class="logo-icon">🚀</span>
+                <span class="logo-text">App<span class="logo-highlight">Starter</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/frontend/website/" class="nav-link">Home</a></li>
+                <li><a href="/frontend/website/features.html" class="nav-link active">Features</a></li>
+                <li><a href="/frontend/website/pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="/frontend/website/about.html" class="nav-link">About</a></li>
+                <li><a href="/frontend/website/contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="/frontend/login.html" class="btn-login">Login</a>
+                <a href="/frontend/register.html" class="btn-signup">Get Started</a>
+            </div>
+            <button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1>Powerful Features for Modern Apps</h1>
+        <p>Everything you need to build, deploy, and scale your application</p>
+    </section>
+
+    <!-- Feature 1: Authentication -->
+    <section class="feature-section">
+        <div class="container">
+            <div class="feature-row">
+                <div class="feature-content">
+                    <span class="feature-badge">Authentication</span>
+                    <h2>Enterprise-Grade Security</h2>
+                    <p>Complete authentication system with JWT tokens, secure password hashing, and session management out of the box.</p>
+                    <ul class="feature-list">
+                        <li>✓ JWT-based authentication</li>
+                        <li>✓ Secure password hashing (bcrypt)</li>
+                        <li>✓ Email verification flow</li>
+                        <li>✓ Password reset with tokens</li>
+                        <li>✓ Remember me functionality</li>
+                        <li>✓ Session management</li>
+                    </ul>
+                </div>
+                <div class="feature-visual">
+                    <div class="visual-card">
+                        <div class="lead-card">
+                            <div class="lead-header">
+                                <div class="lead-avatar">🔐</div>
+                                <div class="lead-info">
+                                    <span class="lead-name">Secure Login</span>
+                                    <span class="lead-company">JWT + bcrypt</span>
+                                </div>
+                                <span class="lead-score" style="background: #d1fae5; color: #065f46;">Active</span>
+                            </div>
+                            <div class="lead-details">
+                                <span>📧 Email verification</span>
+                                <span>🔑 Password reset</span>
+                                <span>⏱️ Token expiry</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature 2: Multi-Tenancy -->
+    <section class="feature-section alt-bg">
+        <div class="container">
+            <div class="feature-row reverse">
+                <div class="feature-content">
+                    <span class="feature-badge">Multi-Tenancy</span>
+                    <h2>Built for SaaS Applications</h2>
+                    <p>Complete multi-tenant architecture with company/organization support, user-company relationships, and data isolation.</p>
+                    <ul class="feature-list">
+                        <li>✓ Company/Organization management</li>
+                        <li>✓ User-Company relationships</li>
+                        <li>✓ Data isolation per tenant</li>
+                        <li>✓ Company switching</li>
+                        <li>✓ Invite users to company</li>
+                        <li>✓ Company-specific settings</li>
+                    </ul>
+                </div>
+                <div class="feature-visual">
+                    <div class="visual-card">
+                        <div class="pipeline-visual">
+                            <div class="pipeline-stage">
+                                <span class="stage-name">Company A</span>
+                                <div class="stage-deals">
+                                    <div class="mini-deal">👤 5 Users</div>
+                                    <div class="mini-deal highlight">Admin</div>
+                                </div>
+                            </div>
+                            <div class="pipeline-stage">
+                                <span class="stage-name">Company B</span>
+                                <div class="stage-deals">
+                                    <div class="mini-deal">👤 12 Users</div>
+                                    <div class="mini-deal">Manager</div>
+                                </div>
+                            </div>
+                            <div class="pipeline-stage won">
+                                <span class="stage-name">Company C</span>
+                                <div class="stage-deals">
+                                    <div class="mini-deal success">👤 25 Users</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature 3: RBAC -->
+    <section class="feature-section">
+        <div class="container">
+            <div class="feature-row">
+                <div class="feature-content">
+                    <span class="feature-badge">Permissions</span>
+                    <h2>Role-Based Access Control</h2>
+                    <p>Flexible RBAC system with granular permissions, role hierarchy, and company-specific access control.</p>
+                    <ul class="feature-list">
+                        <li>✓ Predefined roles (Admin, Manager, User)</li>
+                        <li>✓ Custom role creation</li>
+                        <li>✓ Granular permissions</li>
+                        <li>✓ Company-specific roles</li>
+                        <li>✓ Permission inheritance</li>
+                        <li>✓ API-level authorization</li>
+                    </ul>
+                </div>
+                <div class="feature-visual">
+                    <div class="visual-card">
+                        <div class="customer-visual">
+                            <div class="customer-header">
+                                <div class="customer-avatar">🛡️</div>
+                                <div class="customer-info">
+                                    <span class="customer-name">Role Management</span>
+                                    <span class="customer-type">RBAC System</span>
+                                </div>
+                            </div>
+                            <div class="customer-stats">
+                                <div class="cstat">
+                                    <span>👑</span>
+                                    <small>Super Admin</small>
+                                </div>
+                                <div class="cstat">
+                                    <span>⚙️</span>
+                                    <small>Admin</small>
+                                </div>
+                                <div class="cstat">
+                                    <span>👤</span>
+                                    <small>User</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature 4: Dashboard -->
+    <section class="feature-section alt-bg">
+        <div class="container">
+            <div class="feature-row reverse">
+                <div class="feature-content">
+                    <span class="feature-badge">Dashboard</span>
+                    <h2>Beautiful Analytics Dashboard</h2>
+                    <p>Modern dashboard with Chart.js integration, KPI cards, real-time metrics, and responsive design.</p>
+                    <ul class="feature-list">
+                        <li>✓ Chart.js integration</li>
+                        <li>✓ Line, Bar, Doughnut charts</li>
+                        <li>✓ KPI metric cards</li>
+                        <li>✓ Real-time updates</li>
+                        <li>✓ Responsive design</li>
+                        <li>✓ Dark/Light mode ready</li>
+                    </ul>
+                </div>
+                <div class="feature-visual">
+                    <div class="visual-card">
+                        <div class="chart-visual">
+                            <div class="chart-header">
+                                <span>Revenue Trend</span>
+                                <span class="chart-trend">↑ +24%</span>
+                            </div>
+                            <div class="chart-bars-large">
+                                <div class="chart-bar-item"><div class="bar-fill" style="height: 40%"></div><span>Jan</span></div>
+                                <div class="chart-bar-item"><div class="bar-fill" style="height: 65%"></div><span>Feb</span></div>
+                                <div class="chart-bar-item"><div class="bar-fill" style="height: 50%"></div><span>Mar</span></div>
+                                <div class="chart-bar-item highlight"><div class="bar-fill" style="height: 85%"></div><span>Apr</span></div>
+                                <div class="chart-bar-item"><div class="bar-fill" style="height: 70%"></div><span>May</span></div>
+                                <div class="chart-bar-item"><div class="bar-fill" style="height: 90%"></div><span>Jun</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- More Features Grid -->
+    <section class="more-features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">And More</span>
+                <h2 class="section-title">Everything Included</h2>
+                <p class="section-subtitle">All the features you need to build production-ready applications</p>
+            </div>
+            <div class="features-grid-small">
+                <div class="feature-item">
+                    <span class="feature-icon-small">📧</span>
+                    <h4>Email Service</h4>
+                    <p>RabbitMQ-based email with templates</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">📝</span>
+                    <h4>Audit Logging</h4>
+                    <p>Track all user actions</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">🎨</span>
+                    <h4>UI Components</h4>
+                    <p>Forms, modals, toasts & more</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">📅</span>
+                    <h4>Date Pickers</h4>
+                    <p>Date, time, range pickers</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">📱</span>
+                    <h4>Responsive</h4>
+                    <p>Mobile-first design</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">🔌</span>
+                    <h4>REST API</h4>
+                    <p>OpenAPI/Swagger docs</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">🐳</span>
+                    <h4>Docker Ready</h4>
+                    <p>Containerized deployment</p>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon-small">🧪</span>
+                    <h4>Testing</h4>
+                    <p>pytest test suite</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Start Building?</h2>
+            <p>Get started with AppStarter today and launch your application faster.</p>
+            <div class="cta-buttons">
+                <a href="/frontend/register.html" class="btn-white btn-large">Get Started Free</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2024 AppStarter. Open Source under MIT License.</p>
+                <div class="footer-legal">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audit Trail — TallyInsight</title>
+  <meta name="theme-color" content="#1a3c6e" />
+  <meta name="description" content="TallyInsight — Audit Trail" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" type="image/png" href="/static/assets/branding/favicon.png" />
+  <link rel="stylesheet" href="/static/css/tally-theme.css?v=2" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => { regs.forEach(reg => reg.update()); });
+      caches.keys().then(keys => { keys.filter(k => k.includes('v1')).forEach(k => caches.delete(k)); });
+    }
+  </script>
+  <style>
+    /* ── Page-specific styles ── */
+    .audit-filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .audit-filters input,
+    .audit-filters select {
+      flex: 1;
+      min-width: 140px;
+      max-width: 220px;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.83rem;
+      font-family: inherit;
+      color: var(--text-primary);
+      background: var(--surface);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .audit-filters input:focus,
+    .audit-filters select:focus { border-color: var(--tally-navy); }
+
+    /* Operation badges */
+    .op-badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .op-INSERT  { background: rgba(16,185,129,0.12); color: #059669; }
+    .op-UPDATE  { background: rgba(244,121,32,0.12);  color: #c05a0a; }
+    .op-DELETE  { background: rgba(239,68,68,0.12);   color: #dc2626; }
+    .op-RESTORE { background: rgba(99,102,241,0.12);  color: #4f46e5; }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pagination-info { font-size: 0.8rem; color: var(--text-muted); }
+    .pagination-btns { display: flex; gap: 6px; }
+    .page-btn {
+      padding: 6px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .page-btn:hover:not(:disabled) { border-color: var(--tally-navy); color: var(--tally-navy); }
+    .page-btn.active { background: var(--tally-navy); color: #fff; border-color: var(--tally-navy); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Detail modal */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 500px) { .detail-grid { grid-template-columns: 1fr; } }
+    .detail-field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 3px;
+    }
+    .detail-field span {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .json-block {
+      background: var(--gray-900);
+      color: #a3e635;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      border-radius: var(--radius);
+      padding: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-state svg { opacity: 0.3; display: block; margin: 0 auto 12px; }
+    .empty-state p { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="t-navbar">
+  <a href="/" class="t-navbar-brand">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="#1a3c6e"/>
+      <path d="M8 10h16M8 16h10M8 22h13" stroke="#f47920" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span>TallyInsight</span>
+  </a>
+  <div class="t-navbar-nav">
+    <a href="/sync.html" class="t-nav-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync
+    </a>
+    <a href="/audit.html" class="t-nav-link active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Audit
+    </a>
+  </div>
+  <div class="t-navbar-end">
+    <span class="t-status-dot" id="statusDot"></span>
+    <span class="t-status-text" id="statusText">Checking…</span>
+  </div>
+</nav>
+
+<!-- Toast container -->
+<div id="toastContainer" class="t-toast-container"></div>
+
+<!-- Detail modal -->
+<div id="detailModal" class="t-modal-overlay" style="display:none;" onclick="if(event.target===this)closeDetail()">
+  <div class="t-modal" style="max-width:560px;">
+    <div class="t-modal-header">
+      <h3 class="t-modal-title">Audit Record Detail</h3>
+      <button class="t-modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="t-modal-body" id="detailBody"></div>
+    <div class="t-modal-footer">
+      <button class="t-btn t-btn-ghost" onclick="closeDetail()">Close</button>
+      <button class="t-btn t-btn-primary" id="restoreBtn" style="display:none;" onclick="restoreRecord()">Restore Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main content -->
+<main class="t-container" style="padding-top:28px; padding-bottom:40px;">
+
+  <!-- Page header -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="/" class="t-btn t-btn-ghost t-btn-sm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <div>
+      <h1 style="font-size:1.4rem; font-weight:700; color:var(--tally-navy); margin:0;">Audit Trail</h1>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin:2px 0 0;">Track every data change synced from Tally</p>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="t-stat-grid" style="margin-bottom:24px;">
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(26,60,110,0.1); color:var(--tally-navy);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="statTotal">—</div>
+        <div class="t-stat-label">Total Changes</div>
+      </div>
+    </div>
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="statInserts">—</div>
+        <div class="t-stat-label">Inserts</div>
+      </div>
+    </div>
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(244,121,32,0.1); color:var(--tally-orange);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="statUpdates">—</div>
+        <div class="t-stat-label">Updates</div>
+      </div>
+    </div>
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="statDeletes">—</div>
+        <div class="t-stat-label">Deletes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="t-tabs" style="margin-bottom:20px;">
+    <button class="t-tab active" id="tab-btn-history" onclick="switchTab('history')">History</button>
+    <button class="t-tab" id="tab-btn-sessions" onclick="switchTab('sessions')">Sessions</button>
+    <button class="t-tab" id="tab-btn-deleted" onclick="switchTab('deleted')">Deleted Records</button>
+  </div>
+
+  <!-- History tab -->
+  <div id="tab-history">
+    <div class="t-card">
+      <div class="t-card-header">
+        <h2 class="t-card-title">Change History</h2>
+        <button class="t-btn t-btn-ghost t-btn-sm" onclick="loadHistory()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="t-card-body">
+        <div class="audit-filters">
+          <input type="text" id="filterSearch" placeholder="Search table or record…" oninput="applyFilters()" />
+          <select id="filterOp" onchange="applyFilters()">
+            <option value="">All Operations</option>
+            <option value="INSERT">Insert</option>
+            <option value="UPDATE">Update</option>
+            <option value="DELETE">Delete</option>
+          </select>
+          <select id="filterTable" onchange="applyFilters()">
+            <option value="">All Tables</option>
+          </select>
+          <button class="t-btn t-btn-ghost t-btn-sm" onclick="clearFilters()">Clear</button>
+        </div>
+        <div class="t-table-wrap">
+          <table class="t-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Operation</th>
+                <th>Table</th>
+                <th>Record ID</th>
+                <th>Company</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <div class="pagination-info" id="pageInfo">—</div>
+          <div class="pagination-btns">
+            <button class="page-btn" id="prevBtn" onclick="changePage(-1)" disabled>← Prev</button>
+            <button class="page-btn" id="nextBtn" onclick="changePage(1)" disabled>Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sessions tab -->
+  <div id="tab-sessions" style="display:none;">
+    <div class="t-card">
+      <div class="t-card-header">
+        <h2 class="t-card-title">Sync Sessions</h2>
+        <button class="t-btn t-btn-ghost t-btn-sm" onclick="loadSessions()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="t-card-body">
+        <div class="t-table-wrap">
+          <table class="t-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Company</th>
+                <th>Started</th>
+                <th>Ended</th>
+                <th>Changes</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="sessionsBody">
+              <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deleted records tab -->
+  <div id="tab-deleted" style="display:none;">
+    <div class="t-card">
+      <div class="t-card-header">
+        <h2 class="t-card-title">Deleted Records</h2>
+        <button class="t-btn t-btn-ghost t-btn-sm" onclick="loadDeleted()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div class="t-card-body">
+        <div class="t-table-wrap">
+          <table class="t-table">
+            <thead>
+              <tr>
+                <th>Table</th>
+                <th>Record ID</th>
+                <th>Company</th>
+                <th>Deleted At</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="deletedBody">
+              <tr><td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── State ──
+  let allHistory = [];
+  let filteredHistory = [];
+  let currentPage = 1;
+  const PAGE_SIZE = 20;
+  let currentDetailId = null;
+
+  // ── Helpers ──
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch { return iso; }
+  }
+
+  function showToast(msg, type = '') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 't-toast' + (type ? ' ' + type : '');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  function emptyState(msg) {
+    return `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>${msg}</p>
+    </div>`;
+  }
+
+  // ── Tabs ──
+  function switchTab(name) {
+    ['history','sessions','deleted'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = 'none';
+      document.getElementById('tab-btn-' + t).classList.remove('active');
+    });
+    document.getElementById('tab-' + name).style.display = 'block';
+    document.getElementById('tab-btn-' + name).classList.add('active');
+    if (name === 'sessions') loadSessions();
+    if (name === 'deleted')  loadDeleted();
+  }
+
+  // ── Health check ──
+  async function checkHealth() {
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      const dot  = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      if (d.components && d.components.tally && d.components.tally.status === 'healthy') {
+        dot.className = 't-status-dot connected';
+        text.textContent = 'Tally: Connected';
+      } else {
+        dot.className = 't-status-dot disconnected';
+        text.textContent = 'Tally: Disconnected';
+      }
+    } catch {
+      document.getElementById('statusText').textContent = 'Offline';
+    }
+  }
+
+  // ── Stats ──
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/audit/stats');
+      if (!r.ok) return;
+      const d = await r.json();
+      document.getElementById('statTotal').textContent   = (d.total   || 0).toLocaleString();
+      document.getElementById('statInserts').textContent = (d.inserts || 0).toLocaleString();
+      document.getElementById('statUpdates').textContent = (d.updates || 0).toLocaleString();
+      document.getElementById('statDeletes').textContent = (d.deletes || 0).toLocaleString();
+    } catch { /* ignore */ }
+  }
+
+  // ── History ──
+  async function loadHistory() {
+    document.getElementById('historyBody').innerHTML =
+      '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Loading…</td></tr>';
+    try {
+      const r = await fetch('/api/audit/history?limit=500');
+      if (!r.ok) throw new Error('Failed');
+      const d = await r.json();
+      allHistory = d.records || d || [];
+
+      // Populate table filter
+      const tables = [...new Set(allHistory.map(h => h.table_name).filter(Boolean))].sort();
+      const sel = document.getElementById('filterTable');
+      sel.innerHTML = '<option value="">All Tables</option>' +
+        tables.map(t => `<option value="${t}">${t}</option>`).join('');
+
+      applyFilters();
+    } catch {
+      document.getElementById('historyBody').innerHTML =
+        `<tr><td colspan="6">${emptyState('No audit records found. Audit logging may not be enabled.')}</td></tr>`;
+    }
+  }
+
+  function applyFilters() {
+    const search = document.getElementById('filterSearch').value.toLowerCase();
+    const op     = document.getElementById('filterOp').value;
+    const table  = document.getElementById('filterTable').value;
+
+    filteredHistory = allHistory.filter(h => {
+      if (op    && h.operation   !== op)    return false;
+      if (table && h.table_name  !== table) return false;
+      if (search) {
+        const hay = (h.table_name + ' ' + h.record_id + ' ' + (h.company_name || '')).toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    currentPage = 1;
+    renderHistory();
+  }
+
+  function clearFilters() {
+    document.getElementById('filterSearch').value = '';
+    document.getElementById('filterOp').value = '';
+    document.getElementById('filterTable').value = '';
+    applyFilters();
+  }
+
+  function renderHistory() {
+    const total = filteredHistory.length;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page  = filteredHistory.slice(start, start + PAGE_SIZE);
+
+    document.getElementById('pageInfo').textContent =
+      total === 0 ? 'No records' : `${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}`;
+
+    document.getElementById('prevBtn').disabled = currentPage <= 1;
+    document.getElementById('nextBtn').disabled = start + PAGE_SIZE >= total;
+
+    if (!page.length) {
+      document.getElementById('historyBody').innerHTML =
+        `<tr><td colspan="6">${emptyState('No records match the current filters.')}</td></tr>`;
+      return;
+    }
+
+    document.getElementById('historyBody').innerHTML = page.map(h => `
+      <tr>
+        <td style="white-space:nowrap; font-size:0.8rem;">${fmtTime(h.changed_at || h.created_at)}</td>
+        <td><span class="op-badge op-${h.operation}">${h.operation}</span></td>
+        <td style="font-size:0.82rem; color:var(--text-secondary);">${h.table_name || '—'}</td>
+        <td style="font-size:0.82rem; font-family:monospace;">${h.record_id || '—'}</td>
+        <td style="font-size:0.82rem;">${h.company_name || '—'}</td>
+        <td>
+          <button class="t-btn t-btn-ghost t-btn-sm" onclick='showDetail(${JSON.stringify(h)})'>View</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function changePage(dir) {
+    currentPage += dir;
+    renderHistory();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Sessions ──
+  async function loadSessions() {
+    document.getElementById('sessionsBody').innerHTML =
+      '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Loading…</td></tr>';
+    try {
+      const r = await fetch('/api/audit/sessions');
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      const sessions = d.sessions || d || [];
+      if (!sessions.length) {
+        document.getElementById('sessionsBody').innerHTML =
+          `<tr><td colspan="6">${emptyState('No sync sessions recorded yet.')}</td></tr>`;
+        return;
+      }
+      document.getElementById('sessionsBody').innerHTML = sessions.map(s => `
+        <tr>
+          <td style="font-family:monospace; font-size:0.8rem;">${s.session_id || s.id || '—'}</td>
+          <td>${s.company_name || '—'}</td>
+          <td style="font-size:0.8rem;">${fmtTime(s.started_at)}</td>
+          <td style="font-size:0.8rem;">${fmtTime(s.ended_at)}</td>
+          <td>${(s.changes_count || 0).toLocaleString()}</td>
+          <td><span class="t-badge ${s.status === 'completed' ? 't-badge-success' : 't-badge-warning'}">${s.status || 'unknown'}</span></td>
+        </tr>
+      `).join('');
+    } catch {
+      document.getElementById('sessionsBody').innerHTML =
+        `<tr><td colspan="6">${emptyState('No session data available.')}</td></tr>`;
+    }
+  }
+
+  // ── Deleted records ──
+  async function loadDeleted() {
+    document.getElementById('deletedBody').innerHTML =
+      '<tr><td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">Loading…</td></tr>';
+    try {
+      const r = await fetch('/api/audit/deleted');
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      const records = d.records || d || [];
+      if (!records.length) {
+        document.getElementById('deletedBody').innerHTML =
+          `<tr><td colspan="5">${emptyState('No deleted records found.')}</td></tr>`;
+        return;
+      }
+      document.getElementById('deletedBody').innerHTML = records.map(rec => `
+        <tr>
+          <td style="font-size:0.82rem; color:var(--text-secondary);">${rec.table_name || '—'}</td>
+          <td style="font-family:monospace; font-size:0.82rem;">${rec.record_id || '—'}</td>
+          <td>${rec.company_name || '—'}</td>
+          <td style="font-size:0.8rem;">${fmtTime(rec.deleted_at || rec.changed_at)}</td>
+          <td>
+            <button class="t-btn t-btn-ghost t-btn-sm" onclick='showDetail(${JSON.stringify(rec)}, true)'>Restore</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch {
+      document.getElementById('deletedBody').innerHTML =
+        `<tr><td colspan="5">${emptyState('No deleted records available.')}</td></tr>`;
+    }
+  }
+
+  // ── Detail modal ──
+  function showDetail(record, showRestore = false) {
+    currentDetailId = record.id || record.record_id;
+    const body = document.getElementById('detailBody');
+    body.innerHTML = `
+      <div class="detail-grid" style="margin-bottom:16px;">
+        <div class="detail-field"><label>Operation</label><span><span class="op-badge op-${record.operation}">${record.operation || '—'}</span></span></div>
+        <div class="detail-field"><label>Table</label><span>${record.table_name || '—'}</span></div>
+        <div class="detail-field"><label>Record ID</label><span style="font-family:monospace;">${record.record_id || '—'}</span></div>
+        <div class="detail-field"><label>Company</label><span>${record.company_name || '—'}</span></div>
+        <div class="detail-field"><label>Changed At</label><span>${fmtTime(record.changed_at || record.deleted_at || record.created_at)}</span></div>
+        <div class="detail-field"><label>Session ID</label><span style="font-family:monospace;">${record.session_id || '—'}</span></div>
+      </div>
+      ${record.old_data ? `<div style="margin-bottom:10px;"><label style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Old Data</label><div class="json-block">${JSON.stringify(record.old_data, null, 2)}</div></div>` : ''}
+      ${record.new_data ? `<div><label style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">New Data</label><div class="json-block">${JSON.stringify(record.new_data, null, 2)}</div></div>` : ''}
+    `;
+    document.getElementById('restoreBtn').style.display = showRestore ? 'inline-flex' : 'none';
+    document.getElementById('detailModal').style.display = 'flex';
+  }
+
+  function closeDetail() {
+    document.getElementById('detailModal').style.display = 'none';
+    currentDetailId = null;
+  }
+
+  async function restoreRecord() {
+    if (!currentDetailId) return;
+    try {
+      const r = await fetch('/api/audit/restore/' + currentDetailId, { method: 'POST' });
+      if (r.ok) {
+        showToast('Record restored successfully', 'success');
+        closeDetail();
+        loadDeleted();
+        loadStats();
+      } else {
+        const d = await r.json();
+        showToast(d.detail || 'Restore failed', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  // ── Init ──
+  (function init() {
+    loadStats();
+    loadHistory();
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  })();
+</script>
+</body>
+</html>

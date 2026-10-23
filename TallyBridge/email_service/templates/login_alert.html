@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}New Login Alert{% endblock %}
+
+{% block header_title %}New Login Detected{% endblock %}
+
+{% block content %}
+<h2>Hello {{ user_name }}!</h2>
+
+<p>We detected a new login to your account.</p>
+
+<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0; color: #856404;">
+        <strong>Login Details:</strong>
+    </p>
+    <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #856404;">
+        <li><strong>Time:</strong> {{ login_time|default('Just now') }}</li>
+        <li><strong>IP Address:</strong> {{ ip_address|default('Unknown') }}</li>
+        <li><strong>Location:</strong> {{ location|default('Unknown') }}</li>
+        <li><strong>Device:</strong> {{ device|default('Unknown') }}</li>
+        <li><strong>Browser:</strong> {{ browser|default('Unknown') }}</li>
+    </ul>
+</div>
+
+<p>If this was you, no action is needed.</p>
+
+<p>If you <strong>don't recognize this activity</strong>, please secure your account immediately:</p>
+
+<p style="text-align: center;">
+    <a href="{{ secure_account_link|default('#') }}" class="button">Secure My Account</a>
+</p>
+
+<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+
+<p style="font-size: 12px; color: #666;">
+    We send these alerts to help keep your account secure. You can manage your security settings in your account preferences.
+</p>
+
+<p>Best regards,<br>The Application Starter Kit Team</p>
+{% endblock %}

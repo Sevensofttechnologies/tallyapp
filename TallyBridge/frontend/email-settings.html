@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="manifest" href="manifest.json">
+  <title>Email Settings - VanillaNext</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/widgets.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+  <link rel="stylesheet" href="css/utils/customizer.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  </style>
+</head>
+
+<body>
+  <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+  <div id="install-banner" class="install-banner">
+    <div class="install-banner-content">
+      <div class="install-banner-title">Install VanillaNext</div>
+      <div class="install-banner-text">Add to home screen for quick access</div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+      <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div class="admin-layout" id="app">
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="sidebar-brand">⚡ VanillaNext</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+        <a href="users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+        <a href="audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+        <a href="tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+        <a href="reports/vouchers.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Reports</a>
+        <a href="companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span> Companies</a>
+        <a href="permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span> Permissions</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+        <a href="email-settings.html" class="sidebar-link active admin-only"><span class="sidebar-icon">✉️</span> Email Settings</a>
+        <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+        <a href="#" onclick="Auth.logout()" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200">
+        <a href="profile.html" class="flex items-center gap-3 text-gray-900 hover:text-primary-600 transition">
+          <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold"
+            id="user-initials">U</div>
+          <div class="text-sm">
+            <div class="font-bold" id="user-name">User</div>
+            <div class="text-muted text-xs" id="user-role-display">Role</div>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="flex items-center gap-4">
+          <button class="btn btn-ghost btn-sm lg:hidden" onclick="toggleSidebar()">☰</button>
+          <h2 class="text-lg font-bold">Email Settings (SMTP)</h2>
+        </div>
+        <div class="flex gap-4 items-center">
+          <button class="btn btn-primary btn-sm admin-only" onclick="saveEmailSettings()">💾 Save</button>
+          <button class="btn btn-secondary btn-sm admin-only" onclick="sendTestEmail()">📨 Send Test</button>
+          <button id="theme-toggle" data-toggle="theme" class="btn btn-ghost btn-sm">🌙</button>
+        </div>
+      </header>
+
+      <div class="p-4 w-full">
+        <div class="card p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+              <label class="form-label">SMTP Host</label>
+              <input id="smtp_host" class="form-input" placeholder="smtp.gmail.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">SMTP Port</label>
+              <input id="smtp_port" type="number" class="form-input" placeholder="587" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">SMTP Username</label>
+              <input id="smtp_user" class="form-input" placeholder="your@gmail.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">SMTP Password (App Password)</label>
+              <input id="smtp_password" type="password" class="form-input" placeholder="(leave blank to keep existing)" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">From Email</label>
+              <input id="from_email" class="form-input" placeholder="your@gmail.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">From Name</label>
+              <input id="from_name" class="form-input" placeholder="TallyBridge" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Reply-To</label>
+              <input id="reply_to" class="form-input" placeholder="reply@example.com" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Test Recipient</label>
+              <input id="test_to" class="form-input" value="ganesha@yopmail.com" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Use TLS</label>
+              <select id="use_tls" class="form-input">
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Use SSL</label>
+              <select id="use_ssl" class="form-input">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4 text-sm text-muted" id="password_state"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/table.js"></script>
+  <script src="js/utils/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/email-settings.js"></script>
+  <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

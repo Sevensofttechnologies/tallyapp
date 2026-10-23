@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="Login - Application Starter Kit">
+  <link rel="manifest" href="manifest.json">
+  <title>Login - Application Starter Kit</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+</head>
+
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>🚀 App Starter Kit</h1>
+        <p>Sign in to your account</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+          <span class="form-error" id="email-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div style="position: relative;">
+            <input type="password" id="password" class="form-input" placeholder="••••••••" required
+              autocomplete="current-password">
+            <button type="button" class="btn-icon"
+              style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px;"
+              onclick="togglePassword()">
+              👁️
+            </button>
+          </div>
+          <span class="form-error" id="password-error"></span>
+        </div>
+
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-checkbox">
+            <input type="checkbox" id="remember"> Remember me
+          </label>
+          <a href="forgot-password.html">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;" id="login-btn">
+          Sign In
+        </button>
+
+        <div id="login-error" class="form-error" style="text-align: center; margin-top: var(--space-4);"></div>
+      </form>
+
+      <div class="auth-footer">
+        <p style="margin: 0;">Don't have an account? <a href="register.html">Sign up</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const loginBtn = document.getElementById('login-btn');
+      const errorDiv = document.getElementById('login-error');
+
+      document.getElementById('email-error').textContent = '';
+      document.getElementById('password-error').textContent = '';
+      errorDiv.textContent = '';
+
+      if (!Utils.validateEmail(email)) {
+        document.getElementById('email-error').textContent = 'Please enter a valid email';
+        return;
+      }
+
+      if (password.length < 6) {
+        document.getElementById('password-error').textContent = 'Password must be at least 6 characters';
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<span class="spinner spinner-sm"></span> Signing in...';
+
+      try {
+        const response = await API.auth.login({ email, password });
+
+        if (response.success && response.data) {
+          localStorage.setItem('access_token', response.data.access_token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+
+          // Store company count for redirect logic
+          const companyCount = response.data.company_count || 0;
+          localStorage.setItem('company_count', companyCount);
+
+          Toast.success('Login successful! Redirecting...');
+
+          setTimeout(() => {
+            // Redirect based on company count
+            if (companyCount === 0) {
+              // No companies - go to Tally Sync page
+              window.location.href = 'tally-sync.html';
+            } else {
+              // Has companies - go to Dashboard
+              window.location.href = 'dashboard.html';
+            }
+          }, 1000);
+        } else {
+          throw { message: response.message || 'Login failed' };
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = error.detail || error.message || 'Invalid email or password';
+        Toast.error('Login failed');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Sign In';
+      }
+    });
+
+    // Check if already logged in
+    if (localStorage.getItem('access_token')) {
+      const companyCount = parseInt(localStorage.getItem('company_count') || '0');
+      if (companyCount === 0) {
+        window.location.href = 'tally-sync.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    }
+  </script>
+  <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

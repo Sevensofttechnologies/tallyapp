@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="manifest" href="../manifest.json">
+  <title>Redis Dashboard - VanillaNext</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/widgets.css">
+  <link rel="stylesheet" href="../css/admin-layout.css">
+  <link rel="stylesheet" href="../css/utils/customizer.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div class="admin-layout" id="app">
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="sidebar-brand">⚡ VanillaNext</div>
+      <nav class="sidebar-nav">
+        <a href="../dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+        <a href="../users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+        <a href="../audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+        <a href="../tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+        <a href="../reports/vouchers.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Reports</a>
+        <a href="../companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span> Companies</a>
+        <a href="../permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span> Permissions</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+        <a href="../email-settings.html" class="sidebar-link admin-only"><span class="sidebar-icon">✉️</span> Email Settings</a>
+        <a href="redis-dashboard.html" class="sidebar-link active admin-only"><span class="sidebar-icon">🧠</span> Redis Dashboard</a>
+        <a href="../profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+        <a href="#" onclick="Auth.logout()" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="flex items-center gap-4">
+          <button class="btn btn-ghost btn-sm lg:hidden" onclick="toggleSidebar()">☰</button>
+          <h2 class="text-lg font-bold">Redis Dashboard</h2>
+        </div>
+        <div class="flex gap-4 items-center">
+          <button class="btn btn-secondary btn-sm" onclick="refreshAll()">🔄 Refresh</button>
+          <button id="theme-toggle" data-toggle="theme" class="btn btn-ghost btn-sm">🌙</button>
+        </div>
+      </header>
+
+      <div class="p-4 w-full">
+        <div class="card p-6 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="form-label">Company</label>
+              <div class="form-input" id="company-display">-</div>
+            </div>
+            <div>
+              <label class="form-label">Redis</label>
+              <div class="form-input" id="redis-display">-</div>
+            </div>
+            <div>
+              <label class="form-label">Last Updated</label>
+              <div class="form-input" id="last-updated">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Queue Lengths</h3>
+            <div id="queues-table"></div>
+          </div>
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Workers</h3>
+            <div id="workers-table"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Peek Queue</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+              <div>
+                <label class="form-label">Queue</label>
+                <select class="form-input" id="peek-queue">
+                  <option value="email_jobs">email_jobs</option>
+                  <option value="export_jobs">export_jobs</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Side</label>
+                <select class="form-input" id="peek-side">
+                  <option value="tail">tail</option>
+                  <option value="head">head</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Count</label>
+                <input class="form-input" id="peek-count" type="number" value="20" min="1" max="200" />
+              </div>
+              <div class="flex items-end">
+                <button class="btn btn-primary btn-sm w-full" onclick="refreshPeek()">👀 Peek</button>
+              </div>
+            </div>
+            <pre class="bg-gray-900 text-white p-3 rounded font-mono text-xs overflow-auto" id="peek-output" style="max-height: 320px;"></pre>
+          </div>
+
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Purge Queue</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+              <div>
+                <label class="form-label">Queue</label>
+                <select class="form-input" id="purge-queue">
+                  <option value="email_jobs">email_jobs</option>
+                  <option value="export_jobs">export_jobs</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Mode</label>
+                <select class="form-input" id="purge-mode" onchange="onPurgeModeChange()">
+                  <option value="all">Purge all</option>
+                  <option value="last_n">Purge last N (oldest)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Count</label>
+                <input class="form-input" id="purge-count" type="number" value="0" min="0" max="100000" disabled />
+              </div>
+              <div class="flex items-end">
+                <button class="btn btn-danger btn-sm w-full" onclick="purgeQueue()">🧹 Purge</button>
+              </div>
+            </div>
+            <div class="text-sm text-muted">Purge requires company-admin (or super-admin).</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">DLQ</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+              <div>
+                <label class="form-label">Type</label>
+                <select class="form-input" id="dlq-type">
+                  <option value="email">email</option>
+                  <option value="export">export</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Count</label>
+                <input class="form-input" id="dlq-count" type="number" value="20" min="1" max="200" />
+              </div>
+              <div class="flex items-end">
+                <button class="btn btn-primary btn-sm w-full" onclick="refreshDlq()">📦 Load</button>
+              </div>
+              <div class="flex items-end">
+                <button class="btn btn-secondary btn-sm w-full" onclick="dlqRequeueOne()">↩️ Requeue #0</button>
+              </div>
+            </div>
+            <pre class="bg-gray-900 text-white p-3 rounded font-mono text-xs overflow-auto" id="dlq-output" style="max-height: 320px;"></pre>
+            <div class="text-xs text-muted mt-2">Requeue/Delete actions require company-admin (or super-admin). Index is 0-based (first item = 0).</div>
+          </div>
+
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">History (last 48h)</h3>
+            <pre class="bg-gray-900 text-white p-3 rounded font-mono text-xs overflow-auto" id="history-output" style="max-height: 420px;"></pre>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>window.VanillaNext = window.VanillaNext || {};</script>
+  <script src="../js/core/Component.js"></script>
+  <script src="../js/core/ThemeManager.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/components/toast.js"></script>
+
+  <script>
+    if (typeof ThemeManager !== 'undefined') ThemeManager.init();
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function getCompanyId() {
+      const c = Auth.getActiveCompany();
+      return c ? (parseInt(c.id || c.company_id || c.companyId) || null) : null;
+    }
+
+    function setHeaderStatus(redisData) {
+      const c = Auth.getActiveCompany();
+      document.getElementById('company-display').textContent = c ? `${c.name || 'Company'} (#${c.id || c.company_id || ''})` : '-';
+      document.getElementById('redis-display').textContent = redisData ? (redisData.url || redisData.redis_url || '-') : '-';
+      document.getElementById('last-updated').textContent = new Date().toLocaleString();
+    }
+
+    function renderTable(elId, rows) {
+      const el = document.getElementById(elId);
+      if (!rows || !rows.length) {
+        el.innerHTML = '<div class="text-sm text-muted">No data</div>';
+        return;
+      }
+      const cols = Object.keys(rows[0]);
+      let html = '<div class="overflow-auto"><table class="table w-full">';
+      html += '<thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+      html += '<tbody>';
+      for (const r of rows) {
+        html += '<tr>' + cols.map(c => `<td>${r[c] ?? ''}</td>`).join('') + '</tr>';
+      }
+      html += '</tbody></table></div>';
+      el.innerHTML = html;
+    }
+
+    async function refreshHealth() {
+      const companyId = getCompanyId();
+      if (!companyId) { Toast.warning('Please select a company first'); return; }
+      const res = await API.get(`/admin/redis/health?company_id=${companyId}`);
+      setHeaderStatus(res.data);
+    }
+
+    async function refreshQueues() {
+      const companyId = getCompanyId();
+      const res = await API.get(`/admin/redis/queues?company_id=${companyId}`);
+      const data = res.data || {};
+      const rows = Object.keys(data).map(k => ({ queue: k, length: data[k] }));
+      renderTable('queues-table', rows);
+    }
+
+    async function refreshWorkers() {
+      const companyId = getCompanyId();
+      const res = await API.get(`/admin/redis/workers?company_id=${companyId}`);
+      const items = res.data || [];
+      renderTable('workers-table', items);
+    }
+
+    async function refreshPeek() {
+      const companyId = getCompanyId();
+      const q = document.getElementById('peek-queue').value;
+      const side = document.getElementById('peek-side').value;
+      const count = parseInt(document.getElementById('peek-count').value || '20');
+      const res = await API.get(`/admin/redis/peek?company_id=${companyId}&queue=${encodeURIComponent(q)}&side=${encodeURIComponent(side)}&count=${count}`);
+      document.getElementById('peek-output').textContent = JSON.stringify(res.data, null, 2);
+    }
+
+    function onPurgeModeChange() {
+      const mode = document.getElementById('purge-mode').value;
+      const countEl = document.getElementById('purge-count');
+      countEl.disabled = (mode !== 'last_n');
+      if (mode !== 'last_n') countEl.value = '0';
+    }
+
+    async function purgeQueue() {
+      const companyId = getCompanyId();
+      const q = document.getElementById('purge-queue').value;
+      const mode = document.getElementById('purge-mode').value;
+      const count = parseInt(document.getElementById('purge-count').value || '0');
+      if (!confirm(`Confirm purge: ${q} (${mode}${mode==='last_n' ? ' ' + count : ''})`)) return;
+      const res = await API.post(`/admin/redis/purge?company_id=${companyId}&queue=${encodeURIComponent(q)}&mode=${encodeURIComponent(mode)}&count=${count}`, {});
+      Toast.success(`Purged: ${res.data.removed}`);
+      refreshQueues();
+    }
+
+    async function refreshDlq() {
+      const companyId = getCompanyId();
+      const t = document.getElementById('dlq-type').value;
+      const count = parseInt(document.getElementById('dlq-count').value || '20');
+      const res = await API.get(`/admin/redis/dlq?company_id=${companyId}&dlq_type=${encodeURIComponent(t)}&count=${count}`);
+      document.getElementById('dlq-output').textContent = JSON.stringify(res.data, null, 2);
+    }
+
+    async function dlqRequeueOne() {
+      const companyId = getCompanyId();
+      const t = document.getElementById('dlq-type').value;
+      const res = await API.post(`/admin/redis/dlq/requeue-one?company_id=${companyId}&dlq_type=${encodeURIComponent(t)}&index=0`, {});
+      Toast.success(`Moved: ${res.data.moved}`);
+      refreshDlq();
+      refreshQueues();
+    }
+
+    async function refreshHistory() {
+      const companyId = getCompanyId();
+      const res = await API.get(`/admin/redis/history?company_id=${companyId}&hours=48`);
+      document.getElementById('history-output').textContent = JSON.stringify(res.data, null, 2);
+    }
+
+    async function refreshAll() {
+      try {
+        await refreshHealth();
+        await Promise.all([refreshQueues(), refreshWorkers(), refreshHistory()]);
+      } catch (e) {
+        Toast.error(e.message || e.detail || 'Failed to refresh');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Auth.requireCompany()) return;
+      Auth.applyRoleVisibility();
+      refreshAll();
+    });
+  </script>
+</body>
+
+</html>

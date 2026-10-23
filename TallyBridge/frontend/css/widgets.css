@@ -1,0 +1,281 @@
+/* ==========================================================================
+   ADVANCED WIDGETS LIBRARY
+   ========================================================================== */
+
+@import url('components/datatable.css');
+
+/* --- 1. STATS WIDGETS --- */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-icon-bg {
+    position: absolute;
+    right: -8px;
+    bottom: -8px;
+    font-size: 3.5rem;
+    opacity: 0.1;
+    transform: rotate(-15deg);
+    pointer-events: none;
+}
+
+.stat-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 99px;
+}
+
+.stat-trend.up {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.stat-trend.down {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+/* --- 2. CHAT WIDGET --- */
+.chat-widget {
+    display: flex;
+    flex-direction: column;
+    height: 380px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    overflow: hidden;
+}
+
+.chat-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--gray-50);
+}
+
+.chat-body {
+    flex: 1;
+    padding: var(--space-4);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    background: var(--bg-body);
+}
+
+.chat-footer {
+    padding: var(--space-3);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: var(--space-2);
+    background: var(--bg-surface);
+}
+
+.chat-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    position: relative;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.chat-bubble.sent {
+    align-self: flex-end;
+    background: var(--primary-600);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-bubble.received {
+    align-self: flex-start;
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--gray-800);
+    border-bottom-left-radius: 4px;
+}
+
+.chat-input {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 99px;
+    padding: 8px 16px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.chat-input:focus {
+    border-color: var(--primary-500);
+}
+
+/* --- 3. USER LIST (OVERLAPPING) --- */
+.user-stack {
+    display: flex;
+    align-items: center;
+}
+
+.user-stack-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-surface);
+    margin-left: -10px;
+    object-fit: cover;
+    transition: transform 0.2s;
+    cursor: pointer;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--gray-600);
+}
+
+.user-stack-avatar:first-child {
+    margin-left: 0;
+}
+
+.user-stack-avatar:hover {
+    transform: translateY(-4px);
+    z-index: 10;
+}
+
+.user-stack-more {
+    background: var(--gray-100);
+    font-size: 0.75rem;
+}
+
+/* --- 4. TIMELINE --- */
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--gray-200);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 3px solid var(--primary-500);
+}
+
+.timeline-dot.success {
+    border-color: var(--success);
+}
+
+.timeline-dot.info {
+    border-color: var(--info);
+}
+
+.timeline-content {
+    margin-left: 10px;
+}
+
+.timeline-time {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+}
+
+/* --- 5. PRODUCT CARD --- */
+.product-card {
+    transition: all 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.product-img {
+    height: 180px;
+    width: 100%;
+    object-fit: cover;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+/* --- 6. LIGHTBOX --- */
+.lightbox-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.lightbox-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.lightbox-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 4px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 3rem;
+    cursor: pointer;
+    line-height: 1;
+}

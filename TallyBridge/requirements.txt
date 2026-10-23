@@ -1,0 +1,40 @@
+# FastAPI and Server
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Database
+sqlalchemy==2.0.36
+alembic==1.14.0
+
+# Database Drivers (install as needed)
+# SQLite - included in Python
+# SQL Server
+pyodbc==5.1.0
+# PostgreSQL
+psycopg2-binary==2.9.9
+# MySQL
+pymysql==1.1.0
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+bcrypt==5.0.0
+python-multipart==0.0.20
+
+# Validation
+pydantic==2.10.5
+pydantic-settings==2.7.1
+email-validator==2.2.0
+
+# Environment
+python-dotenv==1.0.1
+
+# Development
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1
+
+# Email Service
+pika==1.3.2
+redis==5.2.1
+jinja2==3.1.4
+cryptography==44.0.0

@@ -1,0 +1,53 @@
+/* ==========================================================================
+   TABLES
+   ========================================================================== */
+
+.table-container {
+    overflow-x: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.table th,
+.table td {
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+}
+
+.table th {
+    background-color: var(--gray-50);
+    color: var(--gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Hover effect */
+.table-hover tbody tr:hover {
+    background-color: var(--gray-50);
+}
+
+/* Striped */
+.table-striped tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+/* Cell Actions */
+.table-actions {
+    display: flex;
+    gap: var(--space-2);
+}

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tally Reports - TallyBridge</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tally-common.css">
+    <style>
+        .reports-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+        .report-card { background: white; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .report-card h3 { margin: 0 0 1rem 0; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; }
+        .report-card .icon { font-size: 1.5rem; }
+        .stat-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: #64748b; }
+        .stat-value { font-weight: 600; font-family: monospace; }
+        .stat-value.positive { color: #16a34a; }
+        .stat-value.negative { color: #dc2626; }
+        .filters { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .filters select { padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; }
+        .loading { text-align: center; padding: 2rem; color: #64748b; }
+        .error { background: #fef2f2; color: #dc2626; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; }
+        .outstanding-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .outstanding-table th, .outstanding-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; }
+        .outstanding-table th { background: #f8fafc; }
+        .amount { text-align: right !important; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .tab { padding: 0.5rem 1rem; border: 1px solid #e2e8f0; background: white; cursor: pointer; border-radius: 0.375rem; }
+        .tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>TallyBridge</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="dashboard.html"><span class="icon">📊</span> Dashboard</a></li>
+                <li><a href="companies.html"><span class="icon">🏢</span> Companies</a></li>
+                <li><a href="users.html"><span class="icon">👥</span> Users</a></li>
+                <li class="nav-divider">Tally Integration</li>
+                <li><a href="tally-sync.html"><span class="icon">🔄</span> Sync</a></li>
+                <li><a href="tally-ledgers.html"><span class="icon">📒</span> Ledgers</a></li>
+                <li><a href="tally-vouchers.html"><span class="icon">📄</span> Vouchers</a></li>
+                <li><a href="tally-reports.html" class="active"><span class="icon">📈</span> Reports</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Tally Reports</h1>
+                <div class="header-actions">
+                    <button onclick="loadAllReports()" class="btn btn-primary">🔄 Refresh</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- Filters -->
+                <div class="filters">
+                    <select id="companyFilter" onchange="loadAllReports()">
+                        <option value="">All Companies</option>
+                    </select>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="loading" style="display: none;">Loading reports...</div>
+                
+                <!-- Error -->
+                <div id="error" class="error" style="display: none;"></div>
+
+                <!-- Reports Grid -->
+                <div class="reports-grid">
+                    <!-- Dashboard Summary -->
+                    <div class="report-card">
+                        <h3><span class="icon">📊</span> Dashboard Summary</h3>
+                        <div id="dashboardStats">
+                            <div class="stat-row">
+                                <span class="stat-label">Total Ledgers</span>
+                                <span class="stat-value" id="totalLedgers">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Total Vouchers</span>
+                                <span class="stat-value" id="totalVouchers">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Stock Items</span>
+                                <span class="stat-value" id="totalStockItems">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Last Sync</span>
+                                <span class="stat-value" id="lastSync">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trial Balance Summary -->
+                    <div class="report-card">
+                        <h3><span class="icon">⚖️</span> Trial Balance</h3>
+                        <div id="trialBalanceStats">
+                            <div class="stat-row">
+                                <span class="stat-label">Total Debit</span>
+                                <span class="stat-value positive" id="totalDebit">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Total Credit</span>
+                                <span class="stat-value negative" id="totalCredit">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Difference</span>
+                                <span class="stat-value" id="tbDifference">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Receivables -->
+                    <div class="report-card">
+                        <h3><span class="icon">💰</span> Receivables (Debtors)</h3>
+                        <div id="receivablesStats">
+                            <div class="stat-row">
+                                <span class="stat-label">Total Outstanding</span>
+                                <span class="stat-value positive" id="totalReceivables">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Parties</span>
+                                <span class="stat-value" id="receivableParties">-</span>
+                            </div>
+                        </div>
+                        <div id="topReceivables" style="margin-top: 1rem;"></div>
+                    </div>
+
+                    <!-- Payables -->
+                    <div class="report-card">
+                        <h3><span class="icon">💳</span> Payables (Creditors)</h3>
+                        <div id="payablesStats">
+                            <div class="stat-row">
+                                <span class="stat-label">Total Outstanding</span>
+                                <span class="stat-value negative" id="totalPayables">-</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Parties</span>
+                                <span class="stat-value" id="payableParties">-</span>
+                            </div>
+                        </div>
+                        <div id="topPayables" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function loadCompanies() {
+            try {
+                const result = await API.tally.getSyncedCompanies();
+                if (result.success && result.data) {
+                    const select = document.getElementById('companyFilter');
+                    const companies = result.data.companies || result.data || [];
+                    companies.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.company_name || c.name || c;
+                        opt.textContent = c.company_name || c.name || c;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to load companies:', e);
+            }
+        }
+
+        async function loadAllReports() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            const company = document.getElementById('companyFilter').value;
+
+            try {
+                await Promise.all([
+                    loadDashboard(company),
+                    loadTrialBalance(company),
+                    loadReceivables(company),
+                    loadPayables(company)
+                ]);
+            } catch (e) {
+                error.textContent = e.message || 'Failed to load reports';
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function loadDashboard(company) {
+            try {
+                const result = await API.tally.getDashboard(company);
+                if (result.success && result.data) {
+                    const data = result.data;
+                    document.getElementById('totalLedgers').textContent = data.ledger_count || data.ledgers || '-';
+                    document.getElementById('totalVouchers').textContent = data.voucher_count || data.vouchers || '-';
+                    document.getElementById('totalStockItems').textContent = data.stock_item_count || data.stock_items || '-';
+                    document.getElementById('lastSync').textContent = data.last_sync ? new Date(data.last_sync).toLocaleString() : '-';
+                }
+            } catch (e) {
+                console.error('Dashboard error:', e);
+            }
+        }
+
+        async function loadTrialBalance(company) {
+            try {
+                const result = await API.tally.getTrialBalance({ company });
+                if (result.success && result.data) {
+                    const data = result.data;
+                    document.getElementById('totalDebit').textContent = formatAmount(data.total_debit || 0);
+                    document.getElementById('totalCredit').textContent = formatAmount(data.total_credit || 0);
+                    const diff = Math.abs((data.total_debit || 0) - (data.total_credit || 0));
+                    document.getElementById('tbDifference').textContent = formatAmount(diff);
+                }
+            } catch (e) {
+                console.error('Trial Balance error:', e);
+            }
+        }
+
+        async function loadReceivables(company) {
+            try {
+                const result = await API.tally.getOutstanding({ company, type: 'receivable' });
+                if (result.success && result.data) {
+                    const data = result.data;
+                    const parties = data.parties || data.outstanding || [];
+                    const total = parties.reduce((sum, p) => sum + (p.amount || p.outstanding || 0), 0);
+                    
+                    document.getElementById('totalReceivables').textContent = formatAmount(total);
+                    document.getElementById('receivableParties').textContent = parties.length;
+                    
+                    // Top 5 receivables
+                    const top5 = parties.slice(0, 5);
+                    let html = '<table class="outstanding-table"><thead><tr><th>Party</th><th class="amount">Amount</th></tr></thead><tbody>';
+                    top5.forEach(p => {
+                        html += `<tr><td>${p.name || p.party}</td><td class="amount">${formatAmount(p.amount || p.outstanding)}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('topReceivables').innerHTML = html;
+                }
+            } catch (e) {
+                console.error('Receivables error:', e);
+            }
+        }
+
+        async function loadPayables(company) {
+            try {
+                const result = await API.tally.getOutstanding({ company, type: 'payable' });
+                if (result.success && result.data) {
+                    const data = result.data;
+                    const parties = data.parties || data.outstanding || [];
+                    const total = parties.reduce((sum, p) => sum + (p.amount || p.outstanding || 0), 0);
+                    
+                    document.getElementById('totalPayables').textContent = formatAmount(total);
+                    document.getElementById('payableParties').textContent = parties.length;
+                    
+                    // Top 5 payables
+                    const top5 = parties.slice(0, 5);
+                    let html = '<table class="outstanding-table"><thead><tr><th>Party</th><th class="amount">Amount</th></tr></thead><tbody>';
+                    top5.forEach(p => {
+                        html += `<tr><td>${p.name || p.party}</td><td class="amount">${formatAmount(p.amount || p.outstanding)}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('topPayables').innerHTML = html;
+                }
+            } catch (e) {
+                console.error('Payables error:', e);
+            }
+        }
+
+        function formatAmount(amount) {
+            return new Intl.NumberFormat('en-IN', { 
+                style: 'currency', 
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(Math.abs(amount));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCompanies();
+            loadAllReports();
+        });
+    </script>
+</body>
+</html>

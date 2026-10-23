@@ -1,0 +1,106 @@
+/* ==========================================================================
+   ALERTS & TOASTS
+   ========================================================================== */
+
+/* --- ALERTS --- */
+.alert {
+    padding: var(--space-4);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-4);
+    border: 1px solid transparent;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.alert-info {
+    background-color: var(--primary-50);
+    border-color: var(--primary-100);
+    color: var(--primary-800);
+}
+
+.alert-success {
+    background-color: var(--success-light);
+    border-color: #a7f3d0;
+    color: #064e3b;
+}
+
+.alert-warning {
+    background-color: var(--warning-light);
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.alert-danger {
+    background-color: var(--danger-light);
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.alert-title {
+    font-weight: 700;
+    margin-bottom: var(--space-1);
+}
+
+/* --- TOASTS --- */
+.toast-container {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    z-index: var(--z-tooltip);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.toast {
+    background-color: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-4);
+    min-width: 300px;
+    max-width: 400px;
+    border-left: 4px solid var(--primary-500);
+    animation: slideInRight 0.3s ease-out forwards;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.toast.hiding {
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease-in;
+}
+
+.toast-message {
+    font-size: 0.875rem;
+    color: var(--gray-800);
+    font-weight: 500;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.toast-close:hover {
+    color: var(--gray-600);
+}
+
+/* Variants */
+.toast-success {
+    border-left-color: var(--success);
+}
+
+.toast-danger {
+    border-left-color: var(--danger);
+}
+
+.toast-warning {
+    border-left-color: var(--warning);
+}

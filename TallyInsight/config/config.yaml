@@ -1,0 +1,53 @@
+api:
+  cors_origins:
+  - http://localhost:3000
+  - http://127.0.0.1:3000
+  - http://localhost:8451
+  - http://127.0.0.1:8451
+  host: 0.0.0.0
+  port: 8401
+auth:
+  algorithm: HS256
+  enabled: true
+  secret_key: tallybots-super-secret-key-change-in-production-2026
+  tallybridge_url: http://localhost:8501
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5
+  recovery_timeout: 60
+database:
+  path: ./tally.db
+debug:
+  enabled: false
+  log_http_details: false
+  log_memory: false
+  log_sql_queries: false
+  log_timing: false
+  verbose_logging: false
+health:
+  check_interval: 30
+  database_timeout: 2
+  tally_timeout: 5
+logging:
+  backup_count: 5
+  colorize: true
+  console: true
+  file: ./logs/app.log
+  level: INFO
+  max_size: 10
+retry:
+  backoff_multiplier: 2
+  enabled: true
+  initial_delay: 5
+  max_attempts: 3
+  max_delay: 60
+  strategy: exponential
+sync:
+  batch_size: 1000
+  mode: full
+tally:
+  company: MATOSHRI ENTERPRISES 18-24
+  from_date: '2019-04-01'
+  port: 9000
+  server: localhost
+  to_date: '2026-03-31'

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VanillaNext - The Ultimate Frontend Kit</title>
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Landing Page Specific CSS Overrides -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --font-main: 'Outfit', sans-serif;
+            /* More modern font for marketing */
+        }
+
+        body {
+            font-family: var(--font-main);
+        }
+
+        .hero-section {
+            background: radial-gradient(circle at 50% 10%, #f0fdf4 0%, #fff 40%);
+            padding: 120px 24px 80px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .hero-section {
+            background: radial-gradient(circle at 50% 10%, #132a22 0%, #0f172a 40%);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--success-500) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 32px;
+            border-radius: 24px;
+            transition: transform 0.3s;
+        }
+
+        [data-theme="dark"] .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .preview-img {
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border: 8px solid rgba(255, 255, 255, 0.5);
+            max-width: 100%;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body class="bg-body text-gray-900">
+
+    <!-- Navbar -->
+    <nav
+        class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur border-b border-gray-100 dark:bg-gray-900/80 dark:border-gray-800">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="font-extrabold text-xl flex items-center gap-2">
+                <span class="text-2xl">⚡</span> VanillaNext
+            </div>
+            <div class="hidden md:flex gap-8 font-medium text-sm text-gray-600 dark:text-gray-300">
+                <a href="#features" class="hover:text-primary-600">Features</a>
+                <a href="#components" class="hover:text-primary-600">Components</a>
+                <a href="#pricing" class="hover:text-primary-600">Pricing</a>
+            </div>
+            <div class="flex gap-4">
+                <a href="login.html" class="btn btn-sm btn-ghost">Login</a>
+                <a href="admin-dashboard.html" class="btn btn-sm btn-primary shadow-lg shadow-primary-500/30">Live
+                    Demo</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero-section">
+        <div
+            class="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-sm font-bold mb-6 border border-primary-100">
+            <span class="w-2 h-2 rounded-full bg-primary-600 animate-pulse"></span> v2.0 Released
+        </div>
+        <h1 class="hero-title">Build Premium Admin Apps<br>Without the Bloat</h1>
+        <p class="hero-subtitle">
+            A dependency-free implementation of a modern Enterprise Design System.
+            Native ESM, CSS Variables, and no build step required.
+        </p>
+        <div class="flex justify-center gap-4">
+            <a href="admin-dashboard.html" class="btn btn-lg btn-primary shadow-xl shadow-primary-600/20">Explore
+                Dashboard</a>
+            <a href="https://github.com" class="btn btn-lg btn-secondary">
+                <span>View on GitHub</span>
+            </a>
+        </div>
+
+        <div class="relative max-w-5xl mx-auto">
+            <img src="https://placehold.co/1200x800/2563eb/ffffff?text=VanillaNext+Admin+Dashboard+Preview"
+                class="preview-img" alt="Dashboard Preview">
+        </div>
+    </header>
+
+    <!-- Features -->
+    <section id="features" class="bg-surface py-20">
+        <div class="text-center mb-16 px-4">
+            <h2 class="text-3xl font-extrabold mb-4">Why VanillaNext?</h2>
+            <p class="text-muted max-w-2xl mx-auto">Most templates are bloated with dependencies you don't need. We get
+                back to basics with modern Web Standards.</p>
+        </div>
+
+        <div class="feature-grid">
+            <div class="glass-card">
+                <div
+                    class="w-12 h-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl mb-6">
+                    ⚡</div>
+                <h3 class="text-xl font-bold mb-3">Zero Dependencies</h3>
+                <p class="text-muted">No React, No Vue, No Tailwind build steps. Just pure, clean HTML, CSS, and JS that
+                    runs anywhere.</p>
+            </div>
+            <div class="glass-card">
+                <div
+                    class="w-12 h-12 rounded-xl bg-success-100 text-success-600 flex items-center justify-center text-2xl mb-6">
+                    🎨</div>
+                <h3 class="text-xl font-bold mb-3">State of the Art UI</h3>
+                <p class="text-muted">Glassmorphism, beautiful gradients, and micro-interactions baked into a
+                    comprehensive CSS system.</p>
+            </div>
+            <div class="glass-card">
+                <div
+                    class="w-12 h-12 rounded-xl bg-warning-100 text-warning-600 flex items-center justify-center text-2xl mb-6">
+                    🚀</div>
+                <h3 class="text-xl font-bold mb-3">Enterprise Ready</h3>
+                <p class="text-muted">Comes with Auth Flow, User Management, Audit Logs, and Email Ops Console
+                    pre-built.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-gray-200 dark:border-gray-800 text-center">
+        <div class="mb-6 font-extrabold text-2xl text-gray-400">⚡ VanillaNext</div>
+        <div class="flex justify-center gap-6 mb-8 text-gray-500">
+            <a href="#" class="hover:text-primary-600">Documentation</a>
+            <a href="#" class="hover:text-primary-600">License</a>
+            <a href="#" class="hover:text-primary-600">Support</a>
+        </div>
+        <p class="text-sm text-gray-400">© 2026 application-starter-kit. MIT License.</p>
+    </footer>
+
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+</body>
+
+</html>

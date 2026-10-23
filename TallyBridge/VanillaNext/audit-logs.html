@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - VanillaNext</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/widgets.css">
+    <link rel="stylesheet" href="css/admin-layout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Document overrides */
+        .admin-main {
+            background: var(--bg-body);
+        }
+    </style>
+</head>
+
+<body class="bg-body">
+    <!-- PWA Banners -->
+    <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner-content">
+            <div class="install-banner-title">Install VanillaNext</div>
+            <div class="install-banner-text">Add to home screen for quick access</div>
+        </div>
+        <div class="install-banner-actions">
+            <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+            <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <a href="file-manager.html" class="sidebar-link"><span class="sidebar-icon">📂</span> Files</a>
+                <a href="kanban.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Kanban</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+                <a href="users.html" class="sidebar-link"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="audit-logs.html" class="sidebar-link active"><span class="sidebar-icon">🛡️</span> Audit
+                    Logs</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+                <a href="organization.html" class="sidebar-link"><span class="sidebar-icon">🏢</span> Organization</a>
+                <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="login.html" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2 class="text-lg font-bold">Audit Logs</h2>
+                <div class="flex gap-4 items-center">
+                    <button class="btn btn-sm btn-ghost relative" data-toggle="notifications">
+                        🔔 <span
+                            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger border border-white"></span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm">Export CSV</button>
+                </div>
+            </header>
+
+            <div class="p-4 w-full">
+                <div class="card p-0">
+                    <table class="table w-full" data-component="datatable">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>User</th>
+                                <th>Resource</th>
+                                <th>IP Address</th>
+                                <th>Time</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-primary">LOGIN</span></td>
+                                <td>john@example.com</td>
+                                <td>Auth</td>
+                                <td class="font-mono text-xs">192.168.1.1</td>
+                                <td class="text-sm">Just now</td>
+                                <td><button class="btn btn-xs btn-outline">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-success">CREATE</span></td>
+                                <td>john@example.com</td>
+                                <td>File (proposal.pdf)</td>
+                                <td class="font-mono text-xs">192.168.1.1</td>
+                                <td class="text-sm">5 mins ago</td>
+                                <td><button class="btn btn-xs btn-outline">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-danger">DELETE</span></td>
+                                <td>admin@system.com</td>
+                                <td>User (Guest)</td>
+                                <td class="font-mono text-xs">10.0.0.5</td>
+                                <td class="text-sm">1 hour ago</td>
+                                <td><button class="btn btn-xs btn-outline">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-warning">UPDATE</span></td>
+                                <td>sarah@example.com</td>
+                                <td>Project (Id: 45)</td>
+                                <td class="font-mono text-xs">172.16.0.22</td>
+                                <td class="text-sm">Yesterday</td>
+                                <td><button class="btn btn-xs btn-outline">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/DataTable.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+    <script src="js/components/NotificationCenter.js"></script>
+    <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

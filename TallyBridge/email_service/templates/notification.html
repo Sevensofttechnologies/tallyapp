@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Notification{% endblock %}
+
+{% block header_title %}{{ title|default('Notification') }}{% endblock %}
+
+{% block content %}
+{% if user_name %}
+<h2>Hello {{ user_name }}!</h2>
+{% endif %}
+
+<div style="padding: 15px; background-color: #f8f9fa; border-left: 4px solid #667eea; margin: 20px 0;">
+    {{ message }}
+</div>
+
+{% if details %}
+<h3>Details:</h3>
+<ul>
+{% for key, value in details.items() %}
+    <li><strong>{{ key }}:</strong> {{ value }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if action_url %}
+<p style="text-align: center;">
+    <a href="{{ action_url }}" class="button">{{ action_text|default('View Details') }}</a>
+</p>
+{% endif %}
+
+<p>Best regards,<br>The Application Starter Kit Team</p>
+{% endblock %}

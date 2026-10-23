@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sync Settings — TallyInsight</title>
+  <meta name="theme-color" content="#1a3c6e" />
+  <meta name="description" content="TallyInsight — Tally ERP Business Intelligence" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="TallyInsight" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" type="image/png" href="/static/assets/branding/favicon.png" />
+  <link rel="stylesheet" href="/static/css/tally-theme.css?v=2" />
+  <script>
+    // Force clear old service worker caches
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => reg.update());
+      });
+      caches.keys().then(keys => {
+        keys.filter(k => k.includes('v1') || k.includes('tallysync-v1')).forEach(k => caches.delete(k));
+      });
+    }
+  </script>
+  <style>
+    /* ── Page-specific styles ── */
+    .sync-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) { .sync-grid { grid-template-columns: 1fr; } }
+
+    /* Company card */
+    .company-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      background: var(--surface);
+    }
+    .company-item:hover { border-color: var(--tally-navy); box-shadow: var(--shadow-sm); }
+    .company-item:last-child { margin-bottom: 0; }
+
+    .company-info { flex: 1; min-width: 0; }
+    .company-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .company-period { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .company-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; margin-left: 12px; }
+
+    /* Synced company item */
+    .synced-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+      text-decoration: none;
+    }
+    .synced-item:hover { background: var(--gray-50); border-color: var(--tally-navy); }
+    .synced-item:last-child { margin-bottom: 0; }
+    .synced-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--tally-navy), var(--tally-navy-light));
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .synced-name { font-weight: 600; font-size: 0.875rem; color: var(--text-primary); }
+    .synced-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
+
+    /* Progress */
+    .sync-progress-wrap {
+      display: none;
+      margin-top: 16px;
+    }
+    .sync-progress-wrap.visible { display: block; }
+    .sync-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    /* Log area */
+    .sync-log {
+      background: var(--gray-900);
+      color: #a3e635;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      height: 180px;
+      overflow-y: auto;
+      line-height: 1.7;
+      margin-top: 16px;
+    }
+    .sync-log .log-info  { color: #93c5fd; }
+    .sync-log .log-ok    { color: #86efac; }
+    .sync-log .log-warn  { color: #fde68a; }
+    .sync-log .log-error { color: #fca5a5; }
+
+    /* Config form */
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+
+    .config-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--tally-navy);
+      margin: 20px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--tally-orange);
+      display: inline-block;
+    }
+
+    /* Schedule */
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-label { font-size: 0.875rem; font-weight: 500; }
+    .schedule-desc  { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Toggle switch */
+    .t-toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .t-toggle input { opacity: 0; width: 0; height: 0; }
+    .t-toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: var(--gray-300); border-radius: 24px;
+      transition: background .2s;
+    }
+    .t-toggle-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%;
+      transition: transform .2s;
+      box-shadow: var(--shadow-xs);
+    }
+    .t-toggle input:checked + .t-toggle-slider { background: var(--tally-navy); }
+    .t-toggle input:checked + .t-toggle-slider::before { transform: translateX(20px); }
+
+    /* Status banner */
+    .sync-status-banner {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .sync-status-banner.running {
+      display: flex;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: var(--tally-navy);
+    }
+    .sync-status-banner.success {
+      display: flex;
+      background: var(--success-light);
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .sync-status-banner.error {
+      display: flex;
+      background: var(--danger-light);
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Breadcrumb */
+    .t-breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .t-breadcrumb a { color: var(--text-muted); }
+    .t-breadcrumb a:hover { color: var(--tally-navy); }
+    .t-breadcrumb-sep { color: var(--gray-300); }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="t-navbar">
+  <a class="t-navbar-brand" href="/">
+    <div class="brand-logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <path d="M3 3h18v4H3zM3 10h12v4H3zM3 17h8v4H3z"/>
+      </svg>
+    </div>
+    <span class="brand-name">Tally<span>Insight</span></span>
+  </a>
+  <nav class="t-navbar-nav">
+    <a href="/" class="t-nav-link active">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
+      Sync
+    </a>
+    <a href="/dashboard.html" class="t-nav-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="/audit.html" class="t-nav-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Audit
+    </a>
+    <a href="/docs" target="_blank" class="t-nav-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      API Docs
+    </a>
+  </nav>
+  <div class="t-navbar-right">
+    <div class="t-status" id="tallyStatus">
+      <span class="t-status-dot" id="statusDot"></span>
+      <span id="statusText">Checking…</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Page ── -->
+<div class="t-page">
+  <div class="t-page-header">
+    <div class="t-page-header-left">
+      <div class="t-breadcrumb">
+        <a href="/">Home</a>
+        <span class="t-breadcrumb-sep">›</span>
+        <span>Sync Settings</span>
+      </div>
+      <h1>Sync Settings</h1>
+      <p>Manage company sync, schedule and Tally configuration</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="t-btn t-btn-ghost t-btn-sm" onclick="checkHealth()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0"/><path d="M12 8v4l3 3"/></svg>
+        Refresh Status
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="t-tabs" style="margin-bottom:24px">
+    <button class="t-tab active" id="tab-btn-company-sync" onclick="switchTab('company-sync')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      Company Sync
+    </button>
+    <button class="t-tab" id="tab-btn-sync-options" onclick="switchTab('sync-options')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      Sync Options
+    </button>
+    <button class="t-tab" id="tab-btn-tally-config" onclick="switchTab('tally-config')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      Tally Configuration
+    </button>
+  </div>
+
+  <!-- ── Tab 1: Company Sync ── -->
+  <div id="tab-company-sync" class="tab-pane">
+    <!-- Status Banner -->
+    <div class="sync-status-banner" id="syncStatusBanner">
+      <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg>
+      <span id="syncStatusMsg">Sync in progress…</span>
+    </div>
+
+    <div class="sync-grid">
+      <!-- Available Companies -->
+      <div class="t-card">
+        <div class="t-card-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            Companies in Tally
+          </h2>
+          <button class="t-btn t-btn-ghost t-btn-sm" onclick="refreshCompanies()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div class="t-card-body" id="company-list">
+          <div class="t-empty">
+            <div class="t-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+            </div>
+            <p>Loading companies…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synced Companies -->
+      <div class="t-card">
+        <div class="t-card-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Synced Companies
+          </h2>
+          <button class="t-btn t-btn-ghost t-btn-sm" onclick="loadSyncedCompanies()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div class="t-card-body" id="synced-company-list">
+          <div class="t-empty">
+            <div class="t-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <p>No synced companies yet</p>
+            <p style="font-size:.8rem;margin-top:4px">Sync a company to see it here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync Progress -->
+    <div class="sync-progress-wrap t-card" id="syncProgressWrap" style="margin-top:20px;padding:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-weight:600;font-size:.9rem;color:var(--tally-navy)" id="syncProgressTitle">Syncing…</span>
+        <span style="font-size:.8rem;color:var(--text-muted)" id="syncProgressPct">0%</span>
+      </div>
+      <div class="t-progress-bar">
+        <div class="t-progress-fill" id="syncProgressFill" style="width:0%"></div>
+      </div>
+      <div class="sync-log" id="syncLog"></div>
+    </div>
+  </div>
+
+  <!-- ── Tab 2: Sync Options ── -->
+  <div id="tab-sync-options" class="tab-pane" style="display:none">
+    <div class="t-card">
+      <div class="t-card-header">
+        <h2>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+          Sync Schedule
+        </h2>
+      </div>
+      <div class="t-card-body">
+        <div class="schedule-row">
+          <div>
+            <div class="schedule-label">Auto Sync</div>
+            <div class="schedule-desc">Automatically sync data at scheduled intervals</div>
+          </div>
+          <label class="t-toggle">
+            <input type="checkbox" id="autoSyncEnabled" onchange="updateSchedule()" />
+            <span class="t-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="schedule-row">
+          <div>
+            <div class="schedule-label">Sync Interval</div>
+            <div class="schedule-desc">How often to run automatic sync</div>
+          </div>
+          <select class="t-select" id="syncInterval" style="width:160px" onchange="updateSchedule()">
+            <option value="15">Every 15 min</option>
+            <option value="30">Every 30 min</option>
+            <option value="60" selected>Every 1 hour</option>
+            <option value="360">Every 6 hours</option>
+            <option value="1440">Daily</option>
+          </select>
+        </div>
+        <div class="schedule-row">
+          <div>
+            <div class="schedule-label">Sync Mode</div>
+            <div class="schedule-desc">Full sync replaces all data; incremental only syncs changes</div>
+          </div>
+          <select class="t-select" id="syncMode" style="width:160px" onchange="updateSchedule()">
+            <option value="incremental" selected>Incremental</option>
+            <option value="full">Full Sync</option>
+          </select>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button class="t-btn t-btn-primary" onclick="saveSchedule()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Schedule
+          </button>
+          <button class="t-btn t-btn-ghost" onclick="runScheduledSync()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab 3: Tally Configuration ── -->
+  <div id="tab-tally-config" class="tab-pane" style="display:none">
+    <div class="t-card">
+      <div class="t-card-header">
+        <h2>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Tally Connection
+        </h2>
+        <button class="t-btn t-btn-ghost t-btn-sm" onclick="testTallyConnection()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Test Connection
+        </button>
+      </div>
+      <div class="t-card-body">
+        <div class="config-grid">
+          <div class="t-form-group">
+            <label class="t-label">Tally Server Host</label>
+            <input type="text" class="t-input" id="tallyHost" placeholder="localhost" />
+          </div>
+          <div class="t-form-group">
+            <label class="t-label">Tally Port</label>
+            <input type="number" class="t-input" id="tallyPort" placeholder="9000" />
+          </div>
+        </div>
+
+        <div class="config-section-title">Date Range</div>
+        <div class="config-grid">
+          <div class="t-form-group">
+            <label class="t-label">From Date</label>
+            <input type="date" class="t-input" id="fromDate" />
+          </div>
+          <div class="t-form-group">
+            <label class="t-label">To Date</label>
+            <input type="date" class="t-input" id="toDate" />
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button class="t-btn t-btn-primary" onclick="saveConfig()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Configuration
+          </button>
+          <button class="t-btn t-btn-ghost" onclick="loadConfig()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Reset
+          </button>
+        </div>
+
+        <!-- Connection test result -->
+        <div id="connectionResult" style="margin-top:16px;display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="t-toast-container" id="toastContainer"></div>
+
+<!-- Edit Company Modal -->
+<div class="t-modal-overlay" id="editModal">
+  <div class="t-modal">
+    <div class="t-modal-header">
+      <h3>Edit Company Date Range</h3>
+      <button class="t-modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="t-modal-body">
+      <div class="config-grid">
+        <div class="t-form-group">
+          <label class="t-label">From Date</label>
+          <input type="date" class="t-input" id="editFromDate" />
+        </div>
+        <div class="t-form-group">
+          <label class="t-label">To Date</label>
+          <input type="date" class="t-input" id="editToDate" />
+        </div>
+      </div>
+      <input type="hidden" id="editCompanyName" />
+      <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="t-btn t-btn-ghost" onclick="closeEditModal()">Cancel</button>
+        <button class="t-btn t-btn-primary" onclick="saveEditCompany()">Save & Sync</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Tab switching ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.t-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).style.display = 'block';
+    document.getElementById('tab-btn-' + name).classList.add('active');
+  }
+
+  // ── Health check ──
+  async function checkHealth() {
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      const dot  = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      const tallyOk = d.components && d.components.tally && d.components.tally.status === 'healthy';
+      if (tallyOk) {
+        dot.className = 't-status-dot connected';
+        text.textContent = 'Tally: Connected';
+      } else {
+        dot.className = 't-status-dot disconnected';
+        text.textContent = 'Tally: Disconnected';
+      }
+    } catch {
+      document.getElementById('statusText').textContent = 'Offline';
+    }
+  }
+
+  // ── Toast helper ──
+  function showToast(msg, type = '') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 't-toast' + (type ? ' ' + type : '');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // ── Edit company modal ──
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  async function saveEditCompany() {
+    const id   = document.getElementById('editCompanyId').value;
+    const name = document.getElementById('editCompanyName').value.trim();
+    const from = document.getElementById('editFromDate').value;
+    const to   = document.getElementById('editToDate').value;
+    if (!name) { showToast('Company name is required', 'error'); return; }
+    try {
+      const r = await fetch('/api/sync/companies/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, from_date: from, to_date: to })
+      });
+      if (r.ok) {
+        showToast('Company updated', 'success');
+        closeEditModal();
+        loadCompanies();
+      } else {
+        const d = await r.json();
+        showToast(d.detail || 'Update failed', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  // ── Config tab ──
+  async function loadConfig() {
+    try {
+      const r = await fetch('/api/sync/config');
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d.tally_host)    document.getElementById('tallyHost').value    = d.tally_host;
+      if (d.tally_port)    document.getElementById('tallyPort').value    = d.tally_port;
+      if (d.tally_timeout) document.getElementById('tallyTimeout').value = d.tally_timeout;
+    } catch { /* ignore */ }
+  }
+
+  async function saveConfig() {
+    const payload = {
+      tally_host:    document.getElementById('tallyHost').value.trim(),
+      tally_port:    parseInt(document.getElementById('tallyPort').value, 10),
+      tally_timeout: parseInt(document.getElementById('tallyTimeout').value, 10)
+    };
+    try {
+      const r = await fetch('/api/sync/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) { showToast('Configuration saved', 'success'); }
+      else       { showToast('Save failed', 'error'); }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  async function testTallyConnection() {
+    const btn = document.querySelector('[onclick="testTallyConnection()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Testing…'; }
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      if (d.components && d.components.tally && d.components.tally.status === 'healthy') {
+        showToast('Tally connected successfully!', 'success');
+      } else {
+        showToast('Cannot reach Tally — check host/port', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+    finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Test Connection'; }
+    }
+  }
+
+  // ── Schedule tab ──
+  async function saveSchedule() {
+    const enabled  = document.getElementById('scheduleEnabled').checked;
+    const interval = document.getElementById('scheduleInterval').value;
+    const time     = document.getElementById('scheduleTime').value;
+    try {
+      const r = await fetch('/api/sync/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, interval, time })
+      });
+      if (r.ok) { showToast('Schedule saved', 'success'); }
+      else       { showToast('Save failed', 'error'); }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  async function runScheduledSync() {
+    const btn = document.querySelector('[onclick="runScheduledSync()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Running…'; }
+    try {
+      const r = await fetch('/api/sync/run', { method: 'POST' });
+      if (r.ok) { showToast('Sync started', 'success'); }
+      else       { showToast('Sync failed to start', 'error'); }
+    } catch { showToast('Network error', 'error'); }
+    finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Run Now'; }
+    }
+  }
+
+  // ── Load companies from Tally (filter out already-synced) ──
+  async function loadCompanies() {
+    const el = document.getElementById('company-list');
+    if (!el) return;
+    el.innerHTML = '<div class="t-empty-state"><p>Loading companies…</p></div>';
+    try {
+      const [rAll, rSynced] = await Promise.all([
+        fetch('/api/companies'),
+        fetch('/api/data/synced-companies')
+      ]);
+      if (!rAll.ok) throw new Error('Failed');
+      const dAll = await rAll.json();
+      const dSynced = rSynced.ok ? await rSynced.json() : { companies: [] };
+      const allCompanies = dAll.companies || [];
+      const syncedNames = new Set((dSynced.companies || []).map(c => (c.company_name || c.name || '').toLowerCase()));
+      const unsynced = allCompanies.filter(c => {
+        const name = typeof c === 'string' ? c : (c.name || c.company_name || '');
+        return !syncedNames.has(name.toLowerCase());
+      });
+      if (!unsynced.length) {
+        el.innerHTML = '<div class="t-empty-state"><p>All Tally companies are already synced</p></div>';
+        return;
+      }
+      el.innerHTML = unsynced.map(c => {
+        const name = typeof c === 'string' ? c : (c.name || c.company_name || JSON.stringify(c));
+        return `<div class="company-item">
+          <div class="company-info">
+            <div class="company-name">${name}</div>
+          </div>
+          <div class="company-actions">
+            <button class="t-btn t-btn-primary t-btn-sm" onclick="fullSyncCompany('${name.replace(/'/g,"\\'")}')">Sync</button>
+          </div>
+        </div>`;
+      }).join('');
+    } catch {
+      el.innerHTML = '<div class="t-empty-state"><p>Could not load companies from Tally</p></div>';
+    }
+  }
+
+  // ── Load synced companies with live sync status ──
+  async function loadSyncedCompanies() {
+    const el = document.getElementById('synced-company-list');
+    if (!el) return;
+    el.innerHTML = '<div class="t-empty-state"><p>Loading…</p></div>';
+    try {
+      const [rSynced, rStatus] = await Promise.all([
+        fetch('/api/data/synced-companies'),
+        fetch('/api/sync/status')
+      ]);
+      if (!rSynced.ok) throw new Error('Failed');
+      const d = await rSynced.json();
+      const syncStatus = rStatus.ok ? await rStatus.json() : null;
+      const companies = d.companies || [];
+      if (!companies.length) {
+        el.innerHTML = '<div class="t-empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;display:block;margin:0 auto 8px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><p>No synced companies yet</p><p style="font-size:0.78rem;margin-top:4px;">Sync a company to see it here</p></div>';
+        return;
+      }
+      el.innerHTML = companies.map(c => {
+        const name = c.company_name || c.name || '—';
+        const lastSync = c.last_sync_at ? new Date(c.last_sync_at).toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'Never';
+        const period = (c.books_from && c.books_to) ? c.books_from + ' – ' + c.books_to : '';
+        const isSyncing = syncStatus && syncStatus.status === 'running' &&
+          (syncStatus.current_company || '').toLowerCase() === name.toLowerCase();
+        const progress = isSyncing ? (syncStatus.progress || 0) : 100;
+        const progressBar = isSyncing ? `
+          <div style="margin-top:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:3px;">
+              <span>Table: ${syncStatus.current_table || '…'}</span>
+              <span>${progress}%</span>
+            </div>
+            <div style="background:var(--border-color);border-radius:4px;height:5px;overflow:hidden;">
+              <div style="background:var(--primary);height:100%;width:${progress}%;transition:width 0.5s;border-radius:4px;"></div>
+            </div>
+          </div>` : '';
+        const statusBadge = isSyncing
+          ? `<span style="font-size:0.7rem;background:rgba(244,121,32,0.15);color:var(--primary);padding:2px 8px;border-radius:10px;font-weight:600;">⟳ Syncing ${progress}%</span>`
+          : `<span style="font-size:0.7rem;background:rgba(34,197,94,0.12);color:#16a34a;padding:2px 8px;border-radius:10px;font-weight:600;">✓ Synced</span>`;
+        return `<div class="synced-item" onclick="window.location='/dashboard.html?company=${encodeURIComponent(name)}'">
+          <div class="synced-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div class="synced-name">${name}</div>
+              ${statusBadge}
+            </div>
+            <div class="synced-meta">${c.sync_count || 0} syncs · Last: ${lastSync}${period ? ' · ' + period : ''}</div>
+            ${progressBar}
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="t-btn t-btn-ghost t-btn-sm" onclick="event.stopPropagation();syncCompany('${name.replace(/'/g,"\\'")}')">Re-sync</button>
+            <button class="t-btn t-btn-ghost t-btn-sm" onclick="event.stopPropagation();deleteCompany('${name.replace(/'/g,"\\'")}')">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+      // Auto-refresh every 3s while a sync is running
+      if (syncStatus && syncStatus.status === 'running') {
+        setTimeout(loadSyncedCompanies, 3000);
+      }
+    } catch {
+      el.innerHTML = '<div class="t-empty-state"><p>Could not load synced companies</p></div>';
+    }
+  }
+
+  // ── Sync a company ──
+  async function syncCompany(name) {
+    showToast('Starting sync for ' + name + '…', '');
+    try {
+      const r = await fetch('/api/sync/incremental?company=' + encodeURIComponent(name), {
+        method: 'POST'
+      });
+      if (r.ok) {
+        showToast('Sync started for ' + name, 'success');
+        setTimeout(() => { loadSyncedCompanies(); loadCompanies(); }, 2000);
+      } else {
+        const d = await r.json().catch(() => ({}));
+        showToast(d.detail || 'Sync failed', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  // ── Full sync a company (first time) ──
+  async function fullSyncCompany(name) {
+    showToast('Starting full sync for ' + name + '…', '');
+    try {
+      const r = await fetch('/api/sync/full?company=' + encodeURIComponent(name), {
+        method: 'POST'
+      });
+      if (r.ok) {
+        showToast('Full sync started for ' + name, 'success');
+        setTimeout(() => { loadSyncedCompanies(); loadCompanies(); }, 2000);
+      } else {
+        const d = await r.json().catch(() => ({}));
+        showToast(d.detail || 'Sync failed', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  // ── Delete a company ──
+  async function deleteCompany(name) {
+    if (!confirm('Delete all data for ' + name + '?')) return;
+    try {
+      const r = await fetch('/api/sync/companies/' + encodeURIComponent(name), { method: 'DELETE' });
+      if (r.ok) {
+        showToast('Company deleted', 'success');
+        loadSyncedCompanies();
+        loadCompanies();
+      } else {
+        showToast('Delete failed', 'error');
+      }
+    } catch { showToast('Network error', 'error'); }
+  }
+
+  // ── Init ──
+  (function init() {
+    loadCompanies();
+    loadSyncedCompanies();
+    loadConfig();
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  })();
+</script>
+</body>
+</html>

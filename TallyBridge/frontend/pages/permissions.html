@@ -1,0 +1,191 @@
+<!-- Permissions Page Fragment -->
+<section id="permissions" class="section active">
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1 class="page-title">🔐 Permissions</h1>
+        <p class="page-subtitle">Manage roles and access control</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="showAddRoleModal()">➕ Add Role</button>
+      </div>
+    </div>
+
+    <!-- Roles Grid -->
+    <div class="roles-grid" id="roles-grid">
+      <!-- Super Admin -->
+      <div class="role-card">
+        <div class="role-header">
+          <div class="role-icon" style="background: var(--danger-light);">👑</div>
+          <div class="role-info">
+            <h3>Super Admin</h3>
+            <p>Full system access</p>
+          </div>
+        </div>
+        <div class="role-permissions">
+          <div class="permission-item granted">✓ Manage Users</div>
+          <div class="permission-item granted">✓ Manage Companies</div>
+          <div class="permission-item granted">✓ Manage Roles</div>
+          <div class="permission-item granted">✓ View Audit Logs</div>
+          <div class="permission-item granted">✓ System Settings</div>
+        </div>
+        <div class="role-footer">
+          <span class="badge badge-danger">System Role</span>
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div class="role-card">
+        <div class="role-header">
+          <div class="role-icon" style="background: var(--warning-light);">⚙️</div>
+          <div class="role-info">
+            <h3>Admin</h3>
+            <p>Company administrator</p>
+          </div>
+        </div>
+        <div class="role-permissions">
+          <div class="permission-item granted">✓ Manage Users</div>
+          <div class="permission-item granted">✓ Manage Companies</div>
+          <div class="permission-item denied">✗ Manage Roles</div>
+          <div class="permission-item granted">✓ View Audit Logs</div>
+          <div class="permission-item denied">✗ System Settings</div>
+        </div>
+        <div class="role-footer">
+          <span class="badge badge-warning">System Role</span>
+        </div>
+      </div>
+
+      <!-- User -->
+      <div class="role-card">
+        <div class="role-header">
+          <div class="role-icon" style="background: var(--info-light);">👤</div>
+          <div class="role-info">
+            <h3>User</h3>
+            <p>Standard user access</p>
+          </div>
+        </div>
+        <div class="role-permissions">
+          <div class="permission-item denied">✗ Manage Users</div>
+          <div class="permission-item denied">✗ Manage Companies</div>
+          <div class="permission-item denied">✗ Manage Roles</div>
+          <div class="permission-item denied">✗ View Audit Logs</div>
+          <div class="permission-item denied">✗ System Settings</div>
+        </div>
+        <div class="role-footer">
+          <span class="badge badge-info">Default Role</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Permissions Matrix -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <h3 class="card-title">📊 Permissions Matrix</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Permission</th>
+                <th style="text-align: center;">Super Admin</th>
+                <th style="text-align: center;">Admin</th>
+                <th style="text-align: center;">User</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>View Dashboard</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">✅</td>
+              </tr>
+              <tr>
+                <td>Manage Users</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">❌</td>
+              </tr>
+              <tr>
+                <td>Manage Companies</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">❌</td>
+              </tr>
+              <tr>
+                <td>Manage Roles</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">❌</td>
+                <td style="text-align: center;">❌</td>
+              </tr>
+              <tr>
+                <td>View Audit Logs</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">❌</td>
+              </tr>
+              <tr>
+                <td>System Settings</td>
+                <td style="text-align: center;">✅</td>
+                <td style="text-align: center;">❌</td>
+                <td style="text-align: center;">❌</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function showAddRoleModal() {
+    Toast.info('Custom roles coming soon!');
+  }
+</script>
+
+<style>
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .role-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .role-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-secondary);
+  }
+  .role-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  .role-info h3 { margin: 0 0 4px 0; font-size: 1.1rem; }
+  .role-info p { margin: 0; color: var(--text-muted); font-size: 0.875rem; }
+  .role-permissions { padding: 16px 20px; }
+  .permission-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+  }
+  .permission-item:last-child { border-bottom: none; }
+  .permission-item.granted { color: var(--success); }
+  .permission-item.denied { color: var(--text-muted); }
+  .role-footer {
+    padding: 12px 20px;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+  }
+</style>

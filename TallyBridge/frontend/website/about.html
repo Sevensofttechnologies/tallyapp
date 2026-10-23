@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - AppStarter</title>
+    <link rel="stylesheet" href="/frontend/website/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/frontend/website/" class="nav-logo">
+                <span class="logo-icon">🚀</span>
+                <span class="logo-text">App<span class="logo-highlight">Starter</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/frontend/website/" class="nav-link">Home</a></li>
+                <li><a href="/frontend/website/features.html" class="nav-link">Features</a></li>
+                <li><a href="/frontend/website/pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="/frontend/website/about.html" class="nav-link active">About</a></li>
+                <li><a href="/frontend/website/contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="/frontend/login.html" class="btn-login">Login</a>
+                <a href="/frontend/register.html" class="btn-signup">Get Started</a>
+            </div>
+            <button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1>About AppStarter</h1>
+        <p>Building the future of application development, one starter kit at a time</p>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-content">
+                    <h2>Our Mission</h2>
+                    <p>AppStarter was created with a simple goal: to help developers build production-ready applications faster without sacrificing quality or security.</p>
+                    <p>We believe that every developer should have access to enterprise-grade tools and patterns, regardless of their budget or team size. That's why AppStarter is free and open source.</p>
+                    <p>Our framework combines years of industry experience into a single, cohesive starter kit that handles authentication, multi-tenancy, permissions, and more - so you can focus on what makes your application unique.</p>
+                </div>
+                <div class="about-visual">
+                    <div class="visual-stat">
+                        <span class="stat-icon">🚀</span>
+                        <span class="stat-value">10K+</span>
+                        <span class="stat-text">Downloads</span>
+                    </div>
+                    <div class="visual-stat">
+                        <span class="stat-icon">⭐</span>
+                        <span class="stat-value">500+</span>
+                        <span class="stat-text">GitHub Stars</span>
+                    </div>
+                    <div class="visual-stat">
+                        <span class="stat-icon">👥</span>
+                        <span class="stat-value">100+</span>
+                        <span class="stat-text">Contributors</span>
+                    </div>
+                    <div class="visual-stat">
+                        <span class="stat-icon">🌍</span>
+                        <span class="stat-value">50+</span>
+                        <span class="stat-text">Countries</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our Values</h2>
+            </div>
+            <div class="mission-grid">
+                <div class="mission-card">
+                    <span class="mission-icon">🔓</span>
+                    <h3>Open Source First</h3>
+                    <p>We believe in the power of open source. AppStarter is MIT licensed and will always be free to use.</p>
+                </div>
+                <div class="mission-card">
+                    <span class="mission-icon">🛡️</span>
+                    <h3>Security by Default</h3>
+                    <p>Security isn't an afterthought. Every feature is built with security best practices from the ground up.</p>
+                </div>
+                <div class="mission-card">
+                    <span class="mission-icon">📚</span>
+                    <h3>Developer Experience</h3>
+                    <p>Great documentation, clean code, and intuitive APIs. We obsess over making developers productive.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Section -->
+    <section class="why-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why AppStarter?</h2>
+            </div>
+            <div class="why-grid">
+                <div class="why-item">
+                    <span class="why-icon">⚡</span>
+                    <h4>Fast Setup</h4>
+                    <p>Get up and running in minutes, not days</p>
+                </div>
+                <div class="why-item">
+                    <span class="why-icon">🏗️</span>
+                    <h4>Production Ready</h4>
+                    <p>Battle-tested patterns and best practices</p>
+                </div>
+                <div class="why-item">
+                    <span class="why-icon">🔧</span>
+                    <h4>Customizable</h4>
+                    <p>Easily extend and modify to fit your needs</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Join Our Community</h2>
+            <p>Be part of the growing AppStarter community</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/your-repo/application-starter-kit" class="btn-white btn-large" target="_blank">⭐ Star on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2024 AppStarter. Open Source under MIT License.</p>
+                <div class="footer-legal">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+    </script>
+</body>
+</html>

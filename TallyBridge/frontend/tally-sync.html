@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tally Sync - TallyBridge</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome removed - using emoji fallback for CSP compatibility -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; min-height: 100vh; }
+        
+        /* Navbar */
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
+        .navbar-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: #1e293b; font-weight: 600; font-size: 1.125rem; }
+        .navbar-brand i { color: #3b82f6; font-size: 1.25rem; }
+        .navbar-nav { display: flex; gap: 1rem; }
+        .nav-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.2s; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: #3b82f6; }
+        .navbar-status { display: flex; align-items: center; gap: 0.5rem; }
+        .status-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; }
+        .status-badge.connected { background: #dcfce7; color: #166534; }
+        .status-badge.disconnected { background: #fee2e2; color: #991b1b; }
+        .status-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-badge.connected .dot { background: #22c55e; }
+        .status-badge.disconnected .dot { background: #ef4444; }
+        
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+        .page-header { margin-bottom: 1.5rem; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem; }
+        .page-subtitle { color: #64748b; font-size: 0.875rem; }
+        
+        /* Tabs */
+        .tabs-nav { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+        .tab-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1rem; border: none; background: transparent; color: #64748b; font-weight: 500; cursor: pointer; border-radius: 0.5rem; transition: all 0.2s; }
+        .tab-btn:hover { background: #f1f5f9; color: #1e293b; }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Grid */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        /* Card */
+        .card { background: white; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; }
+        .card-title { font-size: 0.875rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; }
+        .card-title i { color: #3b82f6; }
+        .card-body { padding: 1.25rem; }
+        
+        /* Company List */
+        .company-list { max-height: 400px; overflow-y: auto; }
+        .company-item { display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1.25rem; border-bottom: 1px solid #f1f5f9; transition: background 0.2s; }
+        .company-item:hover { background: #f8fafc; }
+        .company-item:last-child { border-bottom: none; }
+        .company-info { display: flex; flex-direction: column; gap: 0.25rem; }
+        .company-info > div { display: flex; align-items: center; gap: 0.5rem; }
+        .company-name { font-weight: 500; color: #1e293b; }
+        .company-period { font-size: 0.75rem; color: #64748b; }
+        .company-actions { display: flex; gap: 0.5rem; }
+        .badge { padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 600; }
+        .badge-new { background: #dbeafe; color: #1d4ed8; }
+        
+        /* Synced Company */
+        .synced-item { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; }
+        .synced-item:hover { background: #f8fafc; }
+        .synced-item:last-child { border-bottom: none; }
+        .synced-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+        .synced-name { font-weight: 600; color: #1e293b; }
+        .synced-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #64748b; }
+        .synced-meta span { display: flex; align-items: center; gap: 0.25rem; }
+        .synced-actions { display: flex; gap: 0.25rem; }
+        
+        /* Dropdown */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-menu { position: absolute; right: 0; top: 100%; min-width: 160px; background: white; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; display: none; overflow: hidden; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; color: #374151; cursor: pointer; transition: background 0.2s; }
+        .dropdown-item:hover { background: #f3f4f6; }
+        .dropdown-item.text-danger { color: #dc2626; }
+        .dropdown-divider { height: 1px; background: #e5e7eb; margin: 0.25rem 0; }
+        
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 500; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-outline { background: transparent; border: 1px solid #e2e8f0; color: #64748b; }
+        .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+        .btn-icon { width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 0.375rem; }
+        .btn-success { background: #22c55e; color: white; }
+        .btn-success:hover { background: #16a34a; }
+        
+        /* Empty State */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; color: #94a3b8; }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state p { text-align: center; }
+        
+        /* Loading */
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: #64748b; gap: 0.5rem; }
+        
+        /* Form */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.375rem; }
+        .form-input { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.875rem; transition: border-color 0.2s; }
+        .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        
+        /* Interval Options */
+        .interval-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .interval-option { position: relative; }
+        .interval-option input { position: absolute; opacity: 0; }
+        .interval-label { display: flex; flex-direction: column; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; }
+        .interval-option input:checked + .interval-label { border-color: #3b82f6; background: #eff6ff; }
+        .interval-label i { color: #3b82f6; margin-bottom: 0.5rem; }
+        .interval-label strong { color: #1e293b; }
+        .interval-label small { color: #64748b; font-size: 0.75rem; }
+        
+        /* Toggle */
+        .toggle-switch-container { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .toggle-switch { position: relative; width: 48px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 24px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: #3b82f6; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+        
+        /* Connection Status */
+        .connection-status { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 0.5rem; background: #f8fafc; }
+        .status-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .status-icon.connected { background: #dcfce7; color: #166534; }
+        .status-icon.disconnected { background: #fee2e2; color: #991b1b; }
+        .status-icon.checking { background: #fef3c7; color: #92400e; }
+        
+        /* Alert */
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+        .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        
+        /* Progress */
+        .sync-progress { margin-top: 1rem; }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #3b82f6; transition: width 0.3s; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
+        
+        /* Circular Progress */
+        .circular-progress { width: 32px; height: 32px; position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .circular-progress svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .circular-progress .progress-bg { fill: none; stroke: #e2e8f0; stroke-width: 3; }
+        .circular-progress .progress-bar-circle { fill: none; stroke: #3b82f6; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 126; stroke-dashoffset: 126; transition: stroke-dashoffset 0.3s; }
+        .circular-progress .progress-percent { position: absolute; font-size: 0.5rem; font-weight: 600; color: #3b82f6; }
+        
+        /* User Info */
+        .user-info { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.5rem; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .user-details { font-size: 0.875rem; }
+        .user-name { font-weight: 600; color: #1e293b; }
+        .user-role { color: #64748b; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            <span>⚡</span>
+            <span>TallyBridge</span>
+        </a>
+        <div class="navbar-nav">
+            <a href="#" class="nav-link active">🔄 Sync</a>
+        </div>
+        <div class="navbar-status">
+            <div class="status-badge disconnected" id="tally-status">
+                <span class="dot"></span>
+                <span id="tally-status-text">Tally: Disconnected</span>
+            </div>
+            <div class="user-info" id="user-info">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="user-name">User</div>
+                    <div class="user-role" id="user-role">user</div>
+                </div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="logout()" style="margin-left: 1rem;">
+                🚪 Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Alert for first-time users -->
+        <div class="alert alert-info" id="first-time-alert" style="display: none;">
+            ℹ️
+            <div>
+                <strong>Welcome!</strong> Please sync at least one company from Tally to continue to the dashboard.
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h1 class="page-title">Sync Settings</h1>
+            <p class="page-subtitle">Manage company sync, schedule and Tally configuration</p>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('company-sync')">
+                🏢 Company Sync
+            </button>
+            <button class="tab-btn" onclick="switchTab('sync-options')">
+                ⏰ Sync Options
+            </button>
+            <button class="tab-btn" onclick="switchTab('tally-config')">
+                ⚙️ Tally Configuration
+            </button>
+        </div>
+
+        <!-- Tab 1: Company Sync -->
+        <div class="tab-content active" id="tab-company-sync">
+            <div class="grid-2">
+                <!-- Companies from Tally -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🏢 Companies</h2>
+                        <button class="btn btn-outline btn-sm" onclick="refreshCompanies()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div class="company-list" id="company-list">
+                        <div class="loading">⏳ Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Synced Companies -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">✅ Synced Company List</h2>
+                        <button class="btn btn-outline btn-sm" onclick="loadSyncedCompanies()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <div class="company-list" id="synced-company-list">
+                        <div class="loading">⏳ Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Sync Options -->
+        <div class="tab-content" id="tab-sync-options">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">⏱️ Incremental Sync Interval</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #64748b; margin-bottom: 1rem;">Select how often to run incremental sync automatically</p>
+                        <div class="interval-options">
+                            <label class="interval-option">
+                                <input type="radio" name="sync-interval" value="5">
+                                <span class="interval-label">
+                                    ⚡
+                                    <strong>5 Minutes</strong>
+                                    <small>Real-time sync</small>
+                                </span>
+                            </label>
+                            <label class="interval-option">
+                                <input type="radio" name="sync-interval" value="15">
+                                <span class="interval-label">
+                                    🕐
+                                    <strong>15 Minutes</strong>
+                                    <small>Frequent updates</small>
+                                </span>
+                            </label>
+                            <label class="interval-option">
+                                <input type="radio" name="sync-interval" value="30">
+                                <span class="interval-label">
+                                    ⏳
+                                    <strong>30 Minutes</strong>
+                                    <small>Balanced</small>
+                                </span>
+                            </label>
+                            <label class="interval-option">
+                                <input type="radio" name="sync-interval" value="60" checked>
+                                <span class="interval-label">
+                                    ⌛
+                                    <strong>1 Hour</strong>
+                                    <small>Low frequency</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📅 Auto Schedule</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #64748b; margin-bottom: 1rem;">Enable automatic incremental sync</p>
+                        <div class="toggle-switch-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="auto-sync-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="auto-sync-label">Auto Sync: OFF</span>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 1rem;">
+                            💾 Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Tally Configuration -->
+        <div class="tab-content" id="tab-tally-config">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🖥️ Tally Connection</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Tally Host</label>
+                            <input type="text" id="tally-host" class="form-input" value="localhost" placeholder="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label>Tally Port</label>
+                            <input type="number" id="tally-port" class="form-input" value="9000" placeholder="9000">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveTallyConfig()">
+                            💾 Save
+                        </button>
+                        <button class="btn btn-outline" onclick="testTallyConnection()" style="margin-left: 0.5rem;">
+                            🔌 Test Connection
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">💓 Connection Status</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="connection-status" id="connection-status">
+                            <div class="status-icon checking" id="conn-icon">
+                                ⏳
+                            </div>
+                            <div>
+                                <strong id="conn-status-text">Checking connection...</strong>
+                                <p style="color: #64748b; font-size: 0.875rem;" id="conn-status-detail">Please wait</p>
+                            </div>
+                        </div>
+                        <div class="connection-details" id="connection-details" style="margin-top: 1rem; display: none;">
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="color: #64748b;">🖥️ Server:</span>
+                                <span id="detail-server" style="font-weight: 500;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="color: #64748b;">🔌 Port:</span>
+                                <span id="detail-port" style="font-weight: 500;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                                <span style="color: #64748b;">🏢 Current Company:</span>
+                                <span id="detail-company" style="font-weight: 500;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Global state
+        let currentUser = null;
+        let companyCount = 0;
+        // Use TallyBridge API (proxies to TallyInsight) - avoids CSP issues
+        const TALLY_SERVICE_URL = '/api/v1';
+        
+        // Helper: Format date for display
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            } catch(e) {
+                return dateStr;
+            }
+        }
+        
+        // Helper: Generate circular progress HTML
+        function getCircularProgressHtml(percent) {
+            const circumference = 2 * Math.PI * 20; // radius = 20
+            const offset = circumference - (percent / 100) * circumference;
+            return `
+                <div class="circular-progress" style="width:28px;height:28px;">
+                    <svg viewBox="0 0 44 44">
+                        <circle class="progress-bg" cx="22" cy="22" r="20"></circle>
+                        <circle class="progress-bar-circle" cx="22" cy="22" r="20" style="stroke-dasharray:${circumference};stroke-dashoffset:${offset}"></circle>
+                    </svg>
+                    <span class="progress-percent">${percent}%</span>
+                </div>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await checkTallyStatus();
+            await refreshCompanies();
+            await loadSyncedCompanies();
+        });
+
+        // Check authentication
+        async function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/frontend/login.html';
+                return;
+            }
+
+            try {
+                const response = await API.auth.me();
+                if (response.success) {
+                    currentUser = response.data;
+                    companyCount = response.data.company_count || 0;
+                    
+                    // Update user info in navbar
+                    document.getElementById('user-name').textContent = currentUser.full_name || currentUser.email;
+                    document.getElementById('user-role').textContent = currentUser.role;
+                    document.getElementById('user-avatar').textContent = (currentUser.first_name || 'U')[0].toUpperCase();
+                    
+                    // Show first-time alert if no companies
+                    if (companyCount === 0) {
+                        document.getElementById('first-time-alert').style.display = 'flex';
+                    }
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = '/frontend/login.html';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('company_count');
+            window.location.href = '/frontend/login.html';
+        }
+
+        // Check Tally status
+        async function checkTallyStatus() {
+            try {
+                const response = await fetch(`${TALLY_SERVICE_URL}/tally/health`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                });
+                const data = await response.json();
+                
+                const statusBadge = document.getElementById('tally-status');
+                const statusText = document.getElementById('tally-status-text');
+                const connIcon = document.getElementById('conn-icon');
+                const connText = document.getElementById('conn-status-text');
+                const connDetail = document.getElementById('conn-status-detail');
+                
+                if (data.tally_connected || data.status === 'healthy') {
+                    statusBadge.className = 'status-badge connected';
+                    statusText.textContent = 'Tally: Connected';
+                    connIcon.className = 'status-icon connected';
+                    connIcon.innerHTML = '✅';
+                    connText.textContent = 'Connected to Tally';
+                    connDetail.textContent = 'Tally ERP is running and accessible';
+                    
+                    // Show connection details
+                    document.getElementById('connection-details').style.display = 'block';
+                    document.getElementById('detail-server').textContent = data.data?.server || 'localhost';
+                    document.getElementById('detail-port').textContent = data.data?.port || '9000';
+                    document.getElementById('detail-company').textContent = data.data?.current_company || data.current_company || 'Default';
+                } else {
+                    statusBadge.className = 'status-badge disconnected';
+                    statusText.textContent = 'Tally: Disconnected';
+                    connIcon.className = 'status-icon disconnected';
+                    connIcon.innerHTML = '❌';
+                    connText.textContent = 'Tally Disconnected';
+                    connDetail.textContent = 'Make sure Tally is running with ODBC enabled';
+                    document.getElementById('connection-details').style.display = 'none';
+                }
+            } catch (error) {
+                const statusBadge = document.getElementById('tally-status');
+                const statusText = document.getElementById('tally-status-text');
+                statusBadge.className = 'status-badge disconnected';
+                statusText.textContent = 'Tally: Disconnected';
+                
+                document.getElementById('conn-icon').className = 'status-icon disconnected';
+                document.getElementById('conn-icon').innerHTML = '❌';
+                document.getElementById('conn-status-text').textContent = 'Service Unavailable';
+                document.getElementById('conn-status-detail').textContent = 'TallyInsight service is not running';
+            }
+        }
+
+        // Refresh companies from Tally
+        async function refreshCompanies() {
+            const container = document.getElementById('company-list');
+            container.innerHTML = '<div class="loading">⏳ Loading...</div>';
+            
+            try {
+                const response = await fetch(`${TALLY_SERVICE_URL}/tally/companies`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                });
+                const data = await response.json();
+                
+                // Get synced companies to filter
+                    let syncedNames = [];
+                    try {
+                        const syncedRes = await fetch(`${TALLY_SERVICE_URL}/tally/synced-companies`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                        });
+                        const syncedData = await syncedRes.json();
+                        syncedNames = (syncedData.companies || []).map(c => c.company_name || c.name);
+                    } catch(e) { console.log('Could not fetch synced companies'); }
+                    
+                    // Filter out already synced companies
+                    // Handle both string array and object array from API
+                    const companiesList = data.companies.map(c => typeof c === 'string' ? { name: c } : c);
+                    const newCompanies = companiesList.filter(c => !syncedNames.includes(c.name));
+                    
+                    if (newCompanies.length > 0) {
+                        container.innerHTML = newCompanies.map(company => {
+                            const name = company.name || company;
+                            const period = company.books_from && company.books_to 
+                                ? `📅 ${formatDate(company.books_from)} - ${formatDate(company.books_to)}`
+                                : '';
+                            return `
+                            <div class="company-item">
+                                <div class="company-info">
+                                    <div>
+                                        <span class="company-name">${name}</span>
+                                        <span class="badge badge-new">🆕 New</span>
+                                    </div>
+                                    ${period ? `<div class="company-period">${period}</div>` : ''}
+                                </div>
+                                <div class="company-actions">
+                                    <button class="btn btn-success btn-sm" onclick="syncCompany('${name}')">
+                                        🔄 Sync
+                                    </button>
+                                </div>
+                            </div>
+                        `}).join('');
+                    } else if (data.companies.length > 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                ✅
+                                <p>All companies are already synced!</p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                🏢
+                                <p>No companies found in Tally.<br>Make sure Tally is running.</p>
+                            </div>
+                        `;
+                    }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        ⚠️
+                        <p>Cannot connect to Tally service.<br>Please check if TallyInsight is running.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load synced companies
+        async function loadSyncedCompanies() {
+            const container = document.getElementById('synced-company-list');
+            container.innerHTML = '<div class="loading">⏳ Loading...</div>';
+            
+            try {
+                const response = await fetch(`${TALLY_SERVICE_URL}/tally/synced-companies`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                });
+                const data = await response.json();
+                
+                const companies = data.companies || data.data || [];
+                
+                if (companies.length > 0) {
+                    container.innerHTML = companies.map((company, idx) => {
+                        const name = company.company_name || company.name;
+                        return `
+                        <div class="synced-item" onclick="goToDashboard('${name}')">
+                            <div class="synced-header">
+                                <span class="synced-name">${name}</span>
+                                <div class="synced-actions" onclick="event.stopPropagation()">
+                                    <button class="btn btn-icon btn-outline" onclick="goToDashboard('${name}')" title="Dashboard">
+                                        📊
+                                    </button>
+                                    <button class="btn btn-icon btn-success" onclick="syncCompany('${name}')" title="Full Sync">
+                                        🔄
+                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-icon btn-outline" onclick="toggleDropdown(${idx})" title="More">
+                                            ⋮
+                                        </button>
+                                        <div class="dropdown-menu" id="dropdown-${idx}">
+                                            <div class="dropdown-item" onclick="incrementalSync('${name}')">
+                                                ⚡ Incremental Sync
+                                            </div>
+                                            <div class="dropdown-item" onclick="resyncCompany('${name}')">
+                                                🔄 Re-sync All Data
+                                            </div>
+                                            <div class="dropdown-divider"></div>
+                                            <div class="dropdown-item text-danger" onclick="deleteCompany('${name}')">
+                                                🗑️ Delete Company
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="synced-meta">
+                                <span>🔄 ${company.sync_count || 0} syncs</span>
+                                <span>🕒 ${company.last_sync_at ? new Date(company.last_sync_at).toLocaleString('en-IN', {day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'}) : 'Never'}</span>
+                                <span>📅 ${formatDate(company.books_from) || 'N/A'} - ${formatDate(company.books_to) || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `}).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            🗄️
+                            <p>No synced companies yet.<br>Select a company from the left to sync.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        ⚠️
+                        <p>Cannot load synced companies.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Sync company with progress tracking
+        let syncInterval = null;
+        
+        async function syncCompany(companyName) {
+            if (!confirm(`Start full sync for "${companyName}"?`)) return;
+            
+            try {
+                // Show syncing state with circular progress
+                const btn = event.target.closest('button');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = getCircularProgressHtml(0);
+                btn.disabled = true;
+                
+                // Get user ID for webhook
+                const userId = currentUser ? currentUser.id : null;
+                
+                // Trigger sync via TallyBridge proxy (company_name as query param)
+                const response = await fetch(`${TALLY_SERVICE_URL}/tally/sync?company_name=${encodeURIComponent(companyName)}&sync_mode=full`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'started' || data.success) {
+                    // Start polling for progress
+                    let progress = 5;
+                    btn.innerHTML = getCircularProgressHtml(progress);
+                    
+                    syncInterval = setInterval(async () => {
+                        try {
+                            const statusRes = await fetch(`${TALLY_SERVICE_URL}/tally/status`, {
+                                headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+                            });
+                            const statusData = await statusRes.json();
+                            
+                            // Check if sync completed or idle (means finished)
+                            const syncStatus = statusData.data?.status || statusData.status;
+                            const syncProgress = statusData.data?.progress || 0;
+                            
+                            if (syncProgress > progress) {
+                                progress = syncProgress;
+                            } else if (syncStatus === 'running') {
+                                // Increment progress while running
+                                progress = Math.min(progress + 5, 95);
+                            }
+                            btn.innerHTML = getCircularProgressHtml(progress);
+                            
+                            if (syncStatus === 'completed' || syncStatus === 'idle' || progress >= 100) {
+                                clearInterval(syncInterval);
+                                syncInterval = null;
+                                btn.innerHTML = '✅';
+                                
+                                // Call webhook and refresh
+                                await completeSyncAndRefresh(companyName, userId, btn, originalHtml);
+                            }
+                        } catch(e) {
+                            // Simulate progress if API not available
+                            progress = Math.min(progress + 8, 95);
+                            btn.innerHTML = getCircularProgressHtml(progress);
+                        }
+                    }, 1500);
+                    
+                    // Fallback: complete after 45 seconds if still running
+                    setTimeout(async () => {
+                        if (syncInterval) {
+                            clearInterval(syncInterval);
+                            syncInterval = null;
+                            await completeSyncAndRefresh(companyName, userId, btn, originalHtml);
+                        }
+                    }, 45000);
+                    
+                } else {
+                    const errorMsg = data.message || data.detail || (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)) || 'Unknown error';
+                    alert('Sync failed: ' + errorMsg);
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+                
+            } catch (error) {
+                alert('Sync failed: ' + error.message);
+                event.target.closest('button').innerHTML = '🔄 Sync';
+                event.target.closest('button').disabled = false;
+            }
+        }
+
+        // Complete sync and refresh UI
+        async function completeSyncAndRefresh(companyName, userId, btn, originalHtml) {
+            try {
+                // Call webhook to create company in TallyBridge
+                await fetch('/api/v1/tally/webhook/sync-complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify({
+                        company_name: companyName,
+                        user_id: userId,
+                        status: 'completed'
+                    })
+                });
+                
+                // Refresh both company lists
+                await refreshCompanies();
+                await loadSyncedCompanies();
+                
+                // Update company count
+                const meResponse = await API.auth.me();
+                if (meResponse.success) {
+                    companyCount = meResponse.data.company_count || 0;
+                    localStorage.setItem('company_count', companyCount);
+                    
+                    if (companyCount > 0) {
+                        document.getElementById('first-time-alert').style.display = 'none';
+                        
+                        // Ask to go to dashboard
+                        if (confirm('✅ Company synced successfully! Go to Dashboard?')) {
+                            window.location.href = '/frontend/dashboard.html';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Webhook error:', e);
+            }
+            
+            // Reset button
+            if (btn) {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        // Go to dashboard with company selected
+        async function goToDashboard(companyName) {
+            localStorage.setItem('active_company', companyName);
+            
+            // Ensure company exists in TallyBridge by calling webhook
+            try {
+                await fetch('/api/v1/tally/webhook/sync-complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify({
+                        company_name: companyName,
+                        user_id: currentUser?.id,
+                        status: 'completed'
+                    })
+                });
+            } catch(e) {
+                console.log('Webhook call failed, continuing anyway');
+            }
+            
+            window.location.href = '/frontend/dashboard.html';
+        }
+
+        // Dropdown toggle
+        function toggleDropdown(idx) {
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu.id !== `dropdown-${idx}`) menu.classList.remove('show');
+            });
+            // Toggle current
+            const menu = document.getElementById(`dropdown-${idx}`);
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+            }
+        });
+
+        // Incremental sync
+        async function incrementalSync(companyName) {
+            if (!confirm(`⚡ Incremental Sync for "${companyName}"?\n\nThis will sync only changed/new records since last sync.`)) return;
+            
+            // Show progress
+            const btn = event.target.closest('.dropdown-item');
+            const originalText = btn?.innerHTML;
+            if (btn) btn.innerHTML = '⏳ Syncing...';
+            
+            try {
+                const response = await fetch(`${TALLY_SERVICE_URL}/tally/sync?company_name=${encodeURIComponent(companyName)}&sync_mode=incremental`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert(`✅ Incremental sync started for ${companyName}!\n\nSync is running in background.`);
+                    // Refresh synced companies list after a delay
+                    setTimeout(() => loadSyncedCompanies(), 3000);
+                } else {
+                    const error = await response.json();
+                    alert(`❌ Sync failed: ${error.detail || 'Unknown error'}`);
+                }
+            } catch (e) {
+                alert(`❌ Sync failed: ${e.message}`);
+            }
+            
+            if (btn) btn.innerHTML = originalText;
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        }
+
+        // Re-sync all data
+        async function resyncCompany(companyName) {
+            if (!confirm(`🔄 Re-sync ALL data for "${companyName}"?\n\n⚠️ Warning: This will DELETE existing data and sync fresh from Tally.\n\nMake sure "${companyName}" is selected in Tally.`)) return;
+            
+            const btn = event.target.closest('.dropdown-item');
+            const originalText = btn?.innerHTML;
+            if (btn) btn.innerHTML = '⏳ Re-syncing...';
+            
+            try {
+                const response = await fetch(`${TALLY_SERVICE_URL}/tally/sync?company_name=${encodeURIComponent(companyName)}&sync_mode=full`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert(`✅ Re-sync started for ${companyName}!\n\nFull sync is running in background.`);
+                    setTimeout(() => loadSyncedCompanies(), 3000);
+                } else {
+                    const error = await response.json();
+                    alert(`❌ Re-sync failed: ${error.detail || 'Unknown error'}`);
+                }
+            } catch (e) {
+                alert(`❌ Re-sync failed: ${e.message}`);
+            }
+            
+            if (btn) btn.innerHTML = originalText;
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        }
+
+        // Delete company
+        async function deleteCompany(companyName) {
+            if (!confirm(`⚠️ DELETE "${companyName}"?\n\nThis will permanently delete ALL synced data for this company from the database.\n\nThis action cannot be undone!`)) return;
+            
+            // Double confirmation for safety
+            if (!confirm(`🛑 FINAL CONFIRMATION\n\nAre you ABSOLUTELY sure you want to delete "${companyName}"?\n\nType 'yes' in the next prompt to confirm.`)) return;
+            
+            const confirmText = prompt(`Type "DELETE" to confirm deletion of ${companyName}:`);
+            if (confirmText !== 'DELETE') {
+                alert('Deletion cancelled. You must type DELETE exactly.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/v1/tally/company/${encodeURIComponent(companyName)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert(`✅ Company "${companyName}" deleted successfully!`);
+                    // Refresh both lists
+                    await loadSyncedCompanies();
+                    await refreshCompanies();
+                } else {
+                    const error = await response.json();
+                    alert(`❌ Delete failed: ${error.detail || 'Unknown error'}`);
+                }
+            } catch (e) {
+                alert(`❌ Delete failed: ${e.message}`);
+            }
+            
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        }
+
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.closest('.tab-btn').classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        // Auto sync toggle
+        document.getElementById('auto-sync-toggle')?.addEventListener('change', function() {
+            document.getElementById('auto-sync-label').textContent = 
+                this.checked ? 'Auto Sync: ON' : 'Auto Sync: OFF';
+        });
+
+        // Save Tally config
+        function saveTallyConfig() {
+            const host = document.getElementById('tally-host').value;
+            const port = document.getElementById('tally-port').value;
+            localStorage.setItem('tally_host', host);
+            localStorage.setItem('tally_port', port);
+            alert('Tally configuration saved!');
+        }
+
+        // Test Tally connection
+        async function testTallyConnection() {
+            await checkTallyStatus();
+            alert('Connection test complete. Check the status panel.');
+        }
+    </script>
+</body>
+</html>

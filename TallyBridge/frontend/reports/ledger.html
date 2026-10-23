@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<!--
+============================================================
+DEVELOPER NOTE: LEDGER REPORT CLOSING BALANCE FORMULA
+============================================================
+Closing = Opening - Debit + Credit
+
+For Sundry Debtors (IsDeemedPositive=1):
+  - Debit = Receipt (पैसे मिळाले) → balance कमी होतो
+  - Credit = Sales → balance वाढतो
+
+Example: Opening=2124, Debit=2124, Credit=0 → Closing=0
+
+DO NOT CHANGE THIS FORMULA in:
+  - ledger_controller.py (API)
+  - ledger.js (Frontend Table)
+  - pdf_service.py (PDF Export)
+============================================================
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledger Report - TallyBridge</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/admin-layout.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 180px; background: var(--bg-surface); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; z-index: 50; }
+        .admin-main { flex: 1; margin-left: 180px; background: var(--bg-body); display: flex; flex-direction: column; }
+        .sidebar-brand { height: 48px; display: flex; align-items: center; padding: 0 16px; font-weight: 800; font-size: 0.9rem; color: var(--primary-600); border-bottom: 1px solid var(--border-color); }
+        .sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+        .sidebar-link { display: flex; align-items: center; padding: 6px 16px; color: var(--gray-600); font-weight: 500; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+        .sidebar-link:hover, .sidebar-link.active { background: var(--primary-50); color: var(--primary-600); border-right: 3px solid var(--primary-600); }
+        .sidebar-icon { width: 16px; text-align: center; margin-right: 8px; }
+        .sidebar-section { font-size: 0.7rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; padding: 12px 16px 4px; }
+        .sidebar-submenu { display: none; background: var(--gray-50); }
+        .sidebar-submenu.show { display: block; }
+        .sidebar-submenu a { display: block; padding: 5px 16px 5px 40px; font-size: 0.75rem; color: var(--gray-600); text-decoration: none; }
+        .sidebar-submenu a:hover, .sidebar-submenu a.active { color: var(--primary-600); background: var(--primary-50); }
+        .submenu-toggle { cursor: pointer; }
+        .admin-header { height: 48px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; z-index: 40; }
+        .content-area { padding: 16px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+        .stat-card { background: white; border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .stat-icon.opening { background: #f3e8ff; color: #9333ea; }
+        .stat-icon.debit { background: #dcfce7; color: #16a34a; }
+        .stat-icon.credit { background: #fee2e2; color: #dc2626; }
+        .stat-icon.closing { background: #dbeafe; color: #2563eb; }
+        .stat-value { font-size: 1.25rem; font-weight: 700; }
+        .stat-label { font-size: 0.75rem; color: var(--gray-500); }
+        .filters-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .filter-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+        .filter-group label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 4px; color: var(--gray-600); }
+        .search-dropdown { position: relative; }
+        .custom-dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; background: white; border: 1px solid var(--gray-200); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; display: none; }
+        .custom-dropdown.show { display: block; }
+        .dropdown-item { padding: 8px 12px; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid var(--gray-100); }
+        .dropdown-item:hover { background: var(--gray-50); }
+        .report-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; padding: 8px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .report-tab { padding: 6px 12px; border: none; background: none; border-radius: 6px; font-size: 0.8rem; color: var(--gray-600); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .report-tab:hover { background: var(--gray-100); }
+        .report-tab.active { background: var(--primary-600); color: white; }
+        .table-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--gray-200); }
+        .table-header h3 { font-size: 0.9rem; font-weight: 600; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--gray-100); font-size: 0.75rem; }
+        .data-table th { background: var(--gray-50); font-weight: 600; font-size: 0.65rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; }
+        .data-table tbody tr:hover { background: var(--gray-50); }
+        .text-right { text-align: right; }
+        .badge { background: var(--gray-100); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+        .loading-cell { text-align: center; padding: 40px !important; color: var(--gray-500); }
+        @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .filter-row { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .admin-sidebar { display: none; } .admin-main { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar - Same as Dashboard -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="../dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <div class="sidebar-section">Management</div>
+                <a href="../users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="../audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <a href="../tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+                
+                <!-- Reports with Dropdown -->
+                <a href="#" class="sidebar-link submenu-toggle open" onclick="toggleReportsMenu(event)">
+                    <span class="sidebar-icon">📋</span> Reports <span class="arrow">▼</span>
+                </a>
+                <div class="sidebar-submenu show" id="reportsSubmenu">
+                    <a href="#" class="submenu-toggle" onclick="toggleVoucherMenu(event)">📄 Voucher <span class="arrow" style="float:right">▶</span></a>
+                    <div class="sidebar-submenu" id="voucherSubmenu" style="padding-left: 12px;">
+                        <a href="vouchers.html?type=Sales">Sales</a>
+                        <a href="vouchers.html?type=Purchase">Purchase</a>
+                        <a href="vouchers.html?type=Payment">Payment</a>
+                        <a href="vouchers.html?type=Receipt">Receipt</a>
+                        <a href="vouchers.html?type=Journal">Journal</a>
+                        <a href="vouchers.html?type=Contra">Contra</a>
+                    </div>
+                    <a href="#" class="submenu-toggle" onclick="toggleOutstandingMenu(event)">⚖️ Outstanding <span class="arrow" style="float:right">▶</span></a>
+                    <div class="sidebar-submenu" id="outstandingSubmenu" style="padding-left: 12px;">
+                        <a href="outstanding.html?type=receivable">Receivable</a>
+                        <a href="outstanding.html?type=payable">Payable</a>
+                    </div>
+                    <a href="ledger.html" class="active">📖 Ledger</a>
+                </div>
+                
+                <a href="../companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span> Companies</a>
+                <a href="../permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span> Permissions</a>
+                <div class="sidebar-section">Settings</div>
+                <a href="../profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="#" onclick="logout()" class="sidebar-link" style="color: var(--danger)"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <h2 style="font-size: 1rem; font-weight: 600;">📖 Ledger Report</h2>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <select id="companySelect" class="form-input" style="width: 200px; font-size: 0.8rem;" onchange="changeCompany()">
+                        <option value="">Select Company...</option>
+                    </select>
+                    <button class="btn btn-sm" onclick="refreshData()" title="Refresh">🔄</button>
+                    <button class="btn btn-sm" onclick="exportToExcel()" title="Export">📥</button>
+                </div>
+            </header>
+
+            <div class="content-area">
+            <!-- Main View Tabs -->
+            <div class="report-tabs" id="mainTabs">
+                <button class="report-tab active" data-maintab="ledgerlist" onclick="switchMainTab('ledgerlist')">
+                    <i class="fas fa-list-alt"></i> Ledger List
+                </button>
+                <button class="report-tab" data-maintab="transactions" onclick="switchMainTab('transactions')">
+                    <i class="fas fa-exchange-alt"></i> Transactions
+                </button>
+            </div>
+
+            <!-- Ledger List View -->
+            <div id="ledgerListView">
+                <!-- Sub Tabs for Ledger Categories -->
+                <div class="report-tabs" id="ledgerCategoryTabs" style="margin-bottom: 12px;">
+                    <button class="report-tab active" data-category="all" onclick="switchLedgerCategory('all')">
+                        <i class="fas fa-list"></i> All Ledgers
+                    </button>
+                    <button class="report-tab" data-category="sundry_debtors" onclick="switchLedgerCategory('sundry_debtors')">
+                        <i class="fas fa-user-plus"></i> Sundry Debtors
+                    </button>
+                    <button class="report-tab" data-category="sundry_creditors" onclick="switchLedgerCategory('sundry_creditors')">
+                        <i class="fas fa-user-minus"></i> Sundry Creditors
+                    </button>
+                </div>
+
+                <!-- Search Filter -->
+                <div class="filters-card">
+                    <div class="filter-row" style="grid-template-columns: 1fr;">
+                        <div class="filter-group">
+                            <label><i class="fas fa-search"></i> Search Ledgers</label>
+                            <input type="text" id="ledgerListSearch" class="form-input" placeholder="Search by name, parent, GSTIN, mobile, email..." oninput="filterLedgerList()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ledger List Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-list-alt"></i> All Ledgers</h3>
+                        <span class="badge" id="ledgerListCount">0 ledgers</span>
+                    </div>
+                    <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+                        <table class="data-table" id="ledgerListTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="name" style="cursor:pointer">NAME <span class="sort-icon">↕</span></th>
+                                    <th data-sort="parent" style="cursor:pointer">PARENT <span class="sort-icon">↕</span></th>
+                                    <th data-sort="gstin" style="cursor:pointer">GSTIN <span class="sort-icon">↕</span></th>
+                                    <th data-sort="mobile" style="cursor:pointer">MOBILE <span class="sort-icon">↕</span></th>
+                                    <th data-sort="email" style="cursor:pointer">EMAIL <span class="sort-icon">↕</span></th>
+                                    <th class="text-right" data-sort="opening" style="cursor:pointer">OPENING <span class="sort-icon">↕</span></th>
+                                    <th class="text-right" data-sort="closing" style="cursor:pointer">CLOSING <span class="sort-icon">↕</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerListBody">
+                                <tr><td colspan="7" class="loading-cell">Loading ledgers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions View (Hidden by default) -->
+            <div id="transactionsView" style="display: none;">
+                <!-- Ledger Selection Card -->
+                <div class="filters-card">
+                    <div class="filter-row ledger-filters">
+                        <div class="filter-group">
+                            <label><i class="fas fa-book"></i> Select Ledger</label>
+                            <div class="search-dropdown">
+                                <input type="text" id="ledgerSearchInput" class="form-input" placeholder="Type to search ledger..." autocomplete="off" oninput="filterLedgerDropdown()" onfocus="showLedgerDropdown()">
+                                <div id="ledgerDropdown" class="custom-dropdown"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>From Date</label>
+                            <input type="date" id="fromDate" class="form-input" onchange="reloadLedgerIfSelected()">
+                        </div>
+                        <div class="filter-group">
+                            <label>To Date</label>
+                            <input type="date" id="toDate" class="form-input" onchange="reloadLedgerIfSelected()">
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Ledger Summary Stats -->
+            <div class="stats-grid" id="ledgerStats" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-icon opening"><i class="fas fa-arrow-up"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="ledgerOpening">₹0</span>
+                        <span class="stat-label">Opening Balance</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon debit"><i class="fas fa-plus"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="ledgerDebit">₹0</span>
+                        <span class="stat-label">Total Debit</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon credit"><i class="fas fa-minus"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="ledgerCredit">₹0</span>
+                        <span class="stat-label">Total Credit</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon closing"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="ledgerClosing">₹0</span>
+                        <span class="stat-label">Closing Balance</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Tabs -->
+            <div class="report-tabs" id="ledgerTabs" style="display: none;">
+                <button class="report-tab active" data-tab="transactions" onclick="switchLedgerTab('transactions')">
+                    <i class="fas fa-list"></i> Transactions
+                </button>
+                <button class="report-tab" data-tab="billwise" onclick="switchLedgerTab('billwise')">
+                    <i class="fas fa-file-invoice"></i> Bill-wise
+                </button>
+            </div>
+
+            <!-- Ledger Transactions Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3><i class="fas fa-list"></i> <span id="tableTitle">Select a Ledger</span></h3>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button class="btn btn-sm" id="exportPdfBtn" onclick="exportLedgerPDF()" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer;" title="Export PDF">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <span class="badge" id="recordCount">0 entries</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="ledgerTable">
+                        <thead id="tableHead">
+                            <tr>
+                                <th data-sort="date" style="cursor:pointer">DATE <span class="sort-icon">↕</span></th>
+                                <th data-sort="particulars" style="cursor:pointer">PARTICULARS <span class="sort-icon">↕</span></th>
+                                <th data-sort="voucher_type" style="cursor:pointer">VOUCHER TYPE <span class="sort-icon">↕</span></th>
+                                <th>VOUCHER NO.</th>
+                                <th class="text-right" data-sort="debit" style="cursor:pointer">DEBIT <span class="sort-icon">↕</span></th>
+                                <th class="text-right" data-sort="credit" style="cursor:pointer">CREDIT <span class="sort-icon">↕</span></th>
+                                <th class="text-right">BALANCE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="7" class="loading-cell">Select a ledger to view transactions</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div><!-- End transactionsView -->
+            </div><!-- End content-area -->
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        // Sidebar menu toggle functions
+        function toggleReportsMenu(e) {
+            e.preventDefault();
+            const toggle = e.currentTarget;
+            const submenu = document.getElementById('reportsSubmenu');
+            toggle.classList.toggle('open');
+            submenu.classList.toggle('show');
+        }
+        function toggleVoucherMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('voucherSubmenu');
+            submenu.classList.toggle('show');
+            const arrow = e.currentTarget.querySelector('.arrow');
+            arrow.textContent = submenu.classList.contains('show') ? '▼' : '▶';
+        }
+        function toggleOutstandingMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('outstandingSubmenu');
+            submenu.classList.toggle('show');
+            const arrow = e.currentTarget.querySelector('.arrow');
+            arrow.textContent = submenu.classList.contains('show') ? '▼' : '▶';
+        }
+        function logout() {
+            localStorage.removeItem('access_token');
+            window.location.href = '../login.html';
+        }
+    </script>
+    <script src="../js/reports/common.js"></script>
+    <script src="../js/reports/ledger.js"></script>
+</body>
+</html>

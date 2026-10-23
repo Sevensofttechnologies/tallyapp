@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced UI Kit v1.0</title>
+
+    <!-- Main CSS Bundle -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/utils/customizer.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="stylesheet" href="css/admin-layout.css">
+    <!-- Font (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Documentation Specific Styles */
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-body);
+            color: var(--gray-900);
+        }
+
+        .doc-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .doc-nav {
+            width: 180px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .doc-main {
+            flex: 1;
+            margin-left: 180px;
+            padding: 24px;
+            width: 100%;
+        }
+
+        .doc-header {
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 24px;
+        }
+
+        .doc-section {
+            margin-bottom: 80px;
+            scroll-margin-top: 20px;
+        }
+
+        .doc-preview {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 40px;
+            background: var(--bg-body);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .doc-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+            position: relative;
+        }
+
+        .doc-code::after {
+            content: 'Click to Copy';
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 8px 12px;
+            color: var(--gray-600);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: var(--gray-50);
+            color: var(--primary-600);
+        }
+
+        .nav-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-400);
+            font-weight: 700;
+            margin: 24px 0 8px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .doc-nav {
+                display: none;
+            }
+
+            .doc-main {
+                margin-left: 0;
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-body">
+    <!-- PWA Banners -->
+    <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner-content">
+            <div class="install-banner-title">Install VanillaNext</div>
+            <div class="install-banner-text">Add to home screen for quick access</div>
+        </div>
+        <div class="install-banner-actions">
+            <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+            <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="doc-layout">
+
+        <!-- Sidebar -->
+        <nav class="doc-nav">
+            <div class="text-xl font-bold text-primary-600 mb-6 flex items-center gap-2">
+                <span>⚡</span> Advanced UI Kit
+            </div>
+
+            <div class="mb-6">
+                <button class="btn btn-sm btn-secondary w-full" data-toggle="theme">
+                    <span class="theme-text">🌙 Dark Mode</span>
+                </button>
+            </div>
+
+            <span class="nav-title">Components</span>
+            <a href="#buttons" class="nav-link">Buttons & Badges</a>
+            <a href="#cards" class="nav-link">Cards</a>
+            <a href="#inputs" class="nav-link">Forms & Inputs</a>
+            <a href="#modals" class="nav-link">Modals & Alerts</a>
+            <a href="#tabs" class="nav-link">Tabs & Accordions</a>
+
+            <span class="nav-title">Pro Modules</span>
+            <a href="charts.html" class="nav-link text-primary-600 font-bold">📈 Charts Library</a>
+            <a href="widgets.html" class="nav-link text-primary-600 font-bold">🧩 Widgets & Dashboard</a>
+            <a href="file-manager.html" class="nav-link text-primary-600 font-bold">📂 File Manager</a>
+            <a href="forms_showcase.html" class="nav-link text-primary-600 font-bold">📋 Advanced Forms</a>
+            <a href="kanban.html" class="nav-link text-primary-600 font-bold">📅 Kanban Board</a>
+
+            <span class="nav-title">Utils</span>
+            <a href="#typography" class="nav-link">Typography</a>
+            <a href="#colors" class="nav-link">Colors</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="doc-main">
+
+            <header class="doc-header">
+                <h1 class="text-4xl font-bold mb-4">Advanced UI Kit v1.0</h1>
+                <p class="text-xl text-muted">A production-ready framework with 50+ components, pure Vanilla JS, and no
+                    dependencies.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <a href="charts.html" class="card p-4 flex items-center gap-3 hover:shadow-lg transition">
+                        <div
+                            class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl">
+                            📈</div>
+                        <div>
+                            <div class="font-bold">Charts Library</div>
+                            <div class="text-xs text-muted">Real-time & Interactive</div>
+                        </div>
+                    </a>
+                    <a href="widgets.html" class="card p-4 flex items-center gap-3 hover:shadow-lg transition">
+                        <div
+                            class="w-10 h-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xl">
+                            🧩</div>
+                        <div>
+                            <div class="font-bold">Widgets Library</div>
+                            <div class="text-xs text-muted">Stats, Chat, Gallery</div>
+                        </div>
+                    </a>
+                    <a href="forms_showcase.html" class="card p-4 flex items-center gap-3 hover:shadow-lg transition">
+                        <div
+                            class="w-10 h-10 rounded-full bg-success-100 text-success-600 flex items-center justify-center text-xl">
+                            📋</div>
+                        <div>
+                            <div class="font-bold">Advanced Forms</div>
+                            <div class="text-xs text-muted">Wizards, Datepicker</div>
+                        </div>
+                    </a>
+                    <a href="kanban.html" class="card p-4 flex items-center gap-3 hover:shadow-lg transition">
+                        <div
+                            class="w-10 h-10 rounded-full bg-warning-100 text-warning-600 flex items-center justify-center text-xl">
+                            📋</div>
+                        <div>
+                            <div class="font-bold">Kanban Board</div>
+                            <div class="text-xs text-muted">Drag & Drop Tasks</div>
+                        </div>
+                    </a>
+                    <a href="login.html" class="card p-4 flex items-center gap-3 hover:shadow-lg transition">
+                        <div
+                            class="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xl">
+                            🔐</div>
+                        <div>
+                            <div class="font-bold">Auth Pages</div>
+                            <div class="text-xs text-muted">Login, Register, Lock</div>
+                        </div>
+                    </a>
+                    <a href="profile.html" class="card p-4 flex items-center gap-3 hover:shadow-lg transition">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                            👤</div>
+                        <div>
+                            <div class="font-bold">User Profile</div>
+                            <div class="text-xs text-muted">Cover, Settings</div>
+                        </div>
+                    </a>
+                    <button class="card p-4 flex items-center gap-3 hover:shadow-lg transition text-left"
+                        onclick="Toast.show('You are already here!', 'info')">
+                        <div
+                            class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
+                            ⚡</div>
+                        <div>
+                            <div class="font-bold">Core Components</div>
+                            <div class="text-xs text-muted">Buttons, Modals</div>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="mt-8 flex gap-3">
+                    <a href="admin-dashboard.html" class="btn btn-primary btn-rounded w-full md:w-auto">🚀 Launch Admin
+                        Demo</a>
+                    <button class="btn btn-secondary btn-rounded">View Source</button>
+                </div>
+            </header>
+
+            <!-- BUTTONS SECTION -->
+            <section id="buttons" class="doc-section">
+                <h2 class="text-2xl font-bold mb-6">1. Buttons & Variants</h2>
+
+                <!-- Colors -->
+                <h3 class="text-lg font-semibold mb-3">Colors</h3>
+                <div class="doc-preview">
+                    <button class="btn btn-primary">Primary</button>
+                    <button class="btn btn-secondary">Secondary</button>
+                    <button class="btn btn-success">Success</button>
+                    <button class="btn btn-danger">Danger</button>
+                    <button class="btn btn-warning">Warning</button>
+                    <button class="btn btn-info">Info</button>
+                    <button class="btn btn-purple">Purple</button>
+                    <button class="btn btn-pink">Pink</button>
+                </div>
+                <div class="doc-code">&lt;button class="btn btn-primary"&gt;Primary&lt;/button&gt;
+                    &lt;button class="btn btn-purple"&gt;Purple&lt;/button&gt;</div>
+
+                <!-- Sizes & Shapes -->
+                <h3 class="text-lg font-semibold mb-3 mt-8">Sizes & Shapes</h3>
+                <div class="doc-preview">
+                    <button class="btn btn-xs btn-primary">XS</button>
+                    <button class="btn btn-sm btn-primary">Small</button>
+                    <button class="btn btn-primary">Default</button>
+                    <button class="btn btn-lg btn-primary">Large</button>
+                    <div class="w-px h-8 bg-gray-200 mx-2"></div>
+                    <button class="btn btn-primary btn-rounded">Rounded</button>
+                    <button class="btn btn-secondary btn-square">★</button>
+                    <button class="btn btn-secondary btn-square rounded-full">❤</button>
+                </div>
+
+                <!-- Groups -->
+                <h3 class="text-lg font-semibold mb-3 mt-8">Button Groups</h3>
+                <div class="doc-preview">
+                    <div class="btn-group">
+                        <button class="btn btn-secondary">Left</button>
+                        <button class="btn btn-secondary">Middle</button>
+                        <button class="btn btn-secondary">Right</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CARDS SECTION -->
+            <section id="cards" class="doc-section">
+                <h2 class="text-2xl font-bold mb-6">2. Cards & Widgets</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Standard -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Standard Card</h3>
+                            <button class="btn btn-xs btn-ghost">•••</button>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Simple styling with header, body, and footer sections.</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-primary w-full">Action</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card -->
+                    <div class="card stats-card">
+                        <div class="stats-header">
+                            <span class="stats-label">Total Users</span>
+                            <span class="badge badge-success badge-dot">Live</span>
+                        </div>
+                        <div class="stats-value">8,420</div>
+                        <div class="mt-4">
+                            <div class="progress" style="height:4px; background:var(--gray-100);">
+                                <div style="width:70%; height:100%; background:var(--primary-500);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Card -->
+                    <div class="card card-gradient-stroke p-6">
+                        <span class="badge badge-purple mb-4">Premium</span>
+                        <h3 class="text-xl font-bold mb-2">Pro Plan</h3>
+                        <p class="text-muted mb-4">Unlock all features with our pro plan.</p>
+                        <button class="btn btn-purple w-full">Upgrade Now</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TABS & ACCORDIONS -->
+            <section id="tabs" class="doc-section">
+                <h2 class="text-2xl font-bold mb-6">3. Tabs & Accordions</h2>
+
+                <!-- Tabs -->
+                <div class="card p-6 mb-8" data-component="tabs" data-target=".my-tab-content">
+                    <div class="tabs">
+                        <div class="tab-link active" data-content="tab-profile">Profile</div>
+                        <div class="tab-link" data-content="tab-settings">Settings</div>
+                        <div class="tab-link" data-content="tab-msgs">Messages</div>
+                    </div>
+
+                    <div id="tab-profile" class="tab-content my-tab-content active">
+                        <h3 class="font-bold mb-2">Profile Information</h3>
+                        <p class="text-muted">Manage your public profile settings and bio.</p>
+                    </div>
+                    <div id="tab-settings" class="tab-content my-tab-content">
+                        <h3 class="font-bold mb-2">Account Settings</h3>
+                        <p class="text-muted">Password, Email, and Security settings.</p>
+                    </div>
+                    <div id="tab-msgs" class="tab-content my-tab-content">
+                        <h3 class="font-bold mb-2">Messages (0)</h3>
+                        <p class="text-muted">You have no new messages.</p>
+                    </div>
+                </div>
+
+                <!-- Accordion -->
+                <div class="accordion" data-component="accordion">
+                    <div class="accordion-item">
+                        <button class="accordion-header active">What is VanillaNext?</button>
+                        <div class="accordion-body" style="max-height: 100px;">
+                            <div class="accordion-content">
+                                It is a lightweight framework built with pure Javascript and CSS variables.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <button class="accordion-header">Is it production ready?</button>
+                        <div class="accordion-body">
+                            <div class="accordion-content">
+                                Yes! It includes over 50 components and is fully accessible.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <button class="accordion-header">How do I use Dark Mode?</button>
+                        <div class="accordion-body">
+                            <div class="accordion-content">
+                                Click the "Dark Mode" button in the sidebar. The preference is saved in local storage.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODALS & ALERTS -->
+            <section id="modals" class="doc-section">
+                <h2 class="text-2xl font-bold mb-6">4. Modals & Notifications</h2>
+
+                <div class="doc-preview">
+                    <!-- Triggers -->
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#demoModal">
+                        Open Basic Modal
+                    </button>
+                    <button class="btn btn-danger" data-toggle="modal" data-target="#confirmModal">
+                        Delete Confirmation
+                    </button>
+
+                    <div class="w-px h-8 bg-gray-200 mx-4"></div>
+
+                    <!-- Toast Triggers -->
+                    <button class="btn btn-success btn-outline" onclick="Toast.show('Saved successfully!', 'success')">
+                        Success Toast
+                    </button>
+                    <button class="btn btn-warning btn-outline"
+                        onclick="Toast.show('Please update your profile.', 'warning')">
+                        Warning Toast
+                    </button>
+                </div>
+
+                <!-- Alerts -->
+                <div class="mt-6 space-y-4">
+                    <div class="alert alert-info border-l-4 border-info">
+                        <div class="alert-title">Did you know?</div>
+                        <div>You can copy any code block by clicking on it.</div>
+                    </div>
+                    <div class="alert alert-warning border-l-4 border-warning">
+                        <div class="alert-title">Warning</div>
+                        <div>Your subscription satisfies 80% usage.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FORMS & INPUTS -->
+            <section id="inputs" class="doc-section">
+                <h2 class="text-2xl font-bold mb-6">5. Inputs & Forms</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Basic Inputs -->
+                    <div class="card p-6">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input mb-4" placeholder="e.g. John Doe">
+
+                        <label class="form-label">Email Address</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">✉️</span>
+                            <input type="email" class="form-input pl-10 mb-4" placeholder="name@company.com">
+                        </div>
+
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-input" rows="3"></textarea>
+                    </div>
+
+                    <!-- Toggles & Checks -->
+                    <div class="card p-6">
+                        <h3 class="font-bold mb-4">Selection Controls</h3>
+
+                        <label class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" checked>
+                            <span class="form-check-label">Subscribe to newsletter</span>
+                        </label>
+
+                        <label class="form-check mb-4">
+                            <input type="checkbox" class="form-check-input">
+                            <span class="form-check-label">I agree to terms</span>
+                        </label>
+
+                        <div class="border-t border-gray-100 my-4"></div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input type="checkbox" class="form-check-input" id="switch1">
+                            <span class="form-check-label">Airplane Mode</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input" checked id="switch2">
+                            <span class="form-check-label">Bluetooth</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- COMMAND PALETTE MARKUP -->
+    <div class="cmd-backdrop">
+        <div class="cmd-dialog">
+            <div class="cmd-header">
+                <span>🔍</span>
+                <input type="text" class="cmd-input" placeholder="Type a command or search..." autofocus>
+                <div class="text-xs text-muted border border-gray-200 px-2 py-1 rounded">ESC</div>
+            </div>
+            <div class="cmd-body">
+                <div class="cmd-group-title">General</div>
+                <div class="cmd-item" data-action="go-home">
+                    <span>🏠</span> Go to Dashboard
+                    <span class="cmd-shortcut">G H</span>
+                </div>
+                <div class="cmd-item" data-action="theme-toggle">
+                    <span>🌙</span> Toggle Dark Mode
+                    <span class="cmd-shortcut">Ctrl D</span>
+                </div>
+
+                <div class="cmd-group-title">Development</div>
+                <div class="cmd-item" data-action="copy-url">
+                    <span>📋</span> Copy Page URL
+                </div>
+                <div class="cmd-item">
+                    <span>📦</span> View Components
+                </div>
+            </div>
+            <div class="cmd-footer">
+                <span>Use ⇅ to navigate</span>
+                <span>Enter to select</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS (Placed at end of body) -->
+    <div class="modal" id="demoModal" data-component="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Welcome</h3>
+            <button class="modal-close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>This modal is powered by generic Javascript classes.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button class="btn btn-primary">Understood</button>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" data-component="modal">
+        <div class="modal-header text-danger">
+            <h3 class="modal-title">Delete Item?</h3>
+            <button class="modal-close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-danger">Delete Permanently</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/Modal.js"></script>
+    <script src="js/components/Toast.js"></script>
+    <script src="js/components/Dropdown.js"></script>
+    <script src="js/components/Tabs.js"></script>
+    <script src="js/components/Accordion.js"></script>
+    <script src="js/components/CommandPalette.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+    <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

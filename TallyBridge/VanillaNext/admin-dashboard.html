@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - VanillaNext</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/widgets.css">
+    <link rel="stylesheet" href="css/admin-layout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Document overrides */
+        .admin-main {
+            background: var(--bg-body);
+        }
+    </style>
+</head>
+
+<body class="bg-body">
+    <!-- PWA Banners -->
+    <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner-content">
+            <div class="install-banner-title">Install VanillaNext</div>
+            <div class="install-banner-text">Add to home screen for quick access</div>
+        </div>
+        <div class="install-banner-actions">
+            <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+            <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-link active"><span class="sidebar-icon">📊</span>
+                    Dashboard</a>
+                <a href="file-manager.html" class="sidebar-link"><span class="sidebar-icon">📂</span> Files</a>
+                <a href="kanban.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Kanban</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Ops Tools</div>
+                <a href="email-console.html" class="sidebar-link"><span class="sidebar-icon">📨</span> Email Console</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+                <a href="users.html" class="sidebar-link"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="audit-logs.html" class="sidebar-link"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+                <a href="organization.html" class="sidebar-link"><span class="sidebar-icon">🏢</span> Organization</a>
+                <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="#" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Preferences</a>
+                <a href="login.html" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+            <div class="p-4 border-t border-gray-200">
+                <a href="profile.html" class="flex items-center gap-3 text-gray-900 hover:text-primary-600 transition">
+                    <div
+                        class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold">
+                        JD</div>
+                    <div class="text-sm">
+                        <div class="font-bold">John Doe</div>
+                        <div class="text-muted text-xs">Admin</div>
+                    </div>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2 class="text-lg font-bold">Dashboard Overview</h2>
+                <div class="flex gap-4 items-center">
+                    <button class="btn btn-sm btn-ghost relative" data-toggle="notifications">
+                        🔔
+                        <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger border border-white"></span>
+                    </button>
+                    <button class="btn btn-sm btn-ghost" data-toggle="theme">🌙</button>
+                    <button class="btn btn-primary btn-sm">+ New Report</button>
+                </div>
+            </header>
+
+            <div class="p-4 w-full">
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="card stat-card p-6">
+                        <div class="text-muted text-sm uppercase mb-2">Revenue</div>
+                        <div class="text-3xl font-bold" data-simulate="sales">$54,200</div>
+                    </div>
+                    <div class="card stat-card p-6">
+                        <div class="text-muted text-sm uppercase mb-2">Orders</div>
+                        <div class="text-3xl font-bold">1,204</div>
+                    </div>
+                    <div class="card stat-card p-6">
+                        <div class="text-muted text-sm uppercase mb-2">Customers</div>
+                        <div class="text-3xl font-bold">8,540</div>
+                    </div>
+                    <div class="card stat-card p-6 bg-primary text-white">
+                        <div class="text-white text-opacity-80 text-sm uppercase mb-2">Growth</div>
+                        <div class="text-3xl font-bold">+24%</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Activity Feed -->
+                    <div class="lg:col-span-2">
+                        <div class="card p-6 mb-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-bold">Recent Transactions</h3>
+                                <button class="btn btn-sm btn-ghost">View All</button>
+                            </div>
+                            <table class="table w-full">
+                                <thead>
+                                    <tr class="text-left text-sm text-muted">
+                                        <th>User</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <tr>
+                                        <td>Spotify Sub</td>
+                                        <td>Oct 24</td>
+                                        <td>$12.99</td>
+                                        <td><span class="badge badge-success">Paid</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Amazon AWS</td>
+                                        <td>Oct 23</td>
+                                        <td>$45.00</td>
+                                        <td><span class="badge badge-warning">Pending</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Figma Pro</td>
+                                        <td>Oct 22</td>
+                                        <td>$15.00</td>
+                                        <td><span class="badge badge-success">Paid</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Chart Placeholder -->
+                        <div
+                            class="card p-6 h-64 flex items-center justify-center bg-gray-50 border-dashed border-2 border-gray-200">
+                            <div class="text-center text-muted">
+                                <div class="text-4xl mb-2">📈</div>
+                                <div>Analytics Chart Area</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Sidebar Widgets -->
+                    <div class="space-y-6">
+                        <div class="card p-6">
+                            <h3 class="font-bold mb-4">Quick Actions</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="btn btn-outline btn-sm">Sent Invoice</button>
+                                <button class="btn btn-outline btn-sm">Add User</button>
+                                <button class="btn btn-outline btn-sm">Create Task</button>
+                                <button class="btn btn-outline btn-sm">Export</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/Widgets.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+    <script src="js/components/NotificationCenter.js"></script>
+
+    <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

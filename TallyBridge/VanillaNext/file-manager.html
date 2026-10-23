@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/apps/file-manager.css">
+    <link rel="stylesheet" href="css/utils/customizer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-header {
+            height: 64px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .sidebar-brand {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--primary-600);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-nav {
+            padding: 16px 0;
+            flex: 1;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            color: var(--gray-600);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--primary-50);
+            color: var(--primary-600);
+            border-right: 3px solid var(--primary-600);
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                display: none;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <a href="file-manager.html" class="sidebar-link active"><span class="sidebar-icon">📂</span> Files</a>
+                <a href="kanban.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Kanban</a>
+                <a href="forms_showcase.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Forms</a>
+                <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <div class="text-xs font-bold text-muted uppercase px-6 mt-6 mb-2">Settings</div>
+                <a href="#" class="sidebar-link"><span class="sidebar-icon">⚙️</span> Preferences</a>
+                <a href="login.html" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2 class="text-lg font-bold">Files</h2>
+                <div class="flex gap-4 items-center">
+                    <input type="text" class="form-input form-input-sm" placeholder="Search files...">
+                    <button class="btn btn-primary btn-sm">+ Upload</button>
+                </div>
+            </header>
+
+            <div class="file-manager-layout">
+                <!-- FM Sidebar -->
+                <div class="fm-sidebar">
+                    <div class="fm-section-title">My Cloud</div>
+                    <a href="#" class="fm-tree-item active"><span>📁</span> All Files</a>
+                    <a href="#" class="fm-tree-item"><span>📷</span> Images</a>
+                    <a href="#" class="fm-tree-item"><span>🎥</span> Videos</a>
+                    <a href="#" class="fm-tree-item"><span>📄</span> Documents</a>
+
+                    <div class="fm-section-title">Labels</div>
+                    <a href="#" class="fm-tree-item"><span
+                            class="w-2 h-2 rounded-full bg-danger inline-block mr-1"></span> Work</a>
+                    <a href="#" class="fm-tree-item"><span
+                            class="w-2 h-2 rounded-full bg-success inline-block mr-1"></span> Clients</a>
+
+                    <div class="mt-8 p-4 bg-primary-50 rounded text-center">
+                        <div class="text-xs font-bold text-primary-700 mb-2">Storage Usage</div>
+                        <div class="h-2 w-full bg-gray-200 rounded-full mb-2 overflow-hidden">
+                            <div class="h-full bg-primary-600" style="width: 75%"></div>
+                        </div>
+                        <div class="text-xs text-muted">75GB of 100GB used</div>
+                    </div>
+                </div>
+
+                <!-- FM Main -->
+                <div class="fm-main">
+                    <div class="fm-toolbar">
+                        <div class="breadcrumb">
+                            <span class="breadcrumb-item">Files</span>
+                            <span class="breadcrumb-separator">/</span>
+                            <span class="breadcrumb-item active">Project Assets</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-sm btn-ghost">list</button>
+                            <button class="btn btn-sm btn-ghost text-primary-600">grid</button>
+                        </div>
+                    </div>
+
+                    <div class="fm-grid">
+                        <!-- Folder -->
+                        <div class="file-card folder">
+                            <span class="file-icon">📁</span>
+                            <div class="file-name">Marketing</div>
+                            <div class="file-meta">12 items</div>
+                        </div>
+
+                        <div class="file-card folder">
+                            <span class="file-icon">📁</span>
+                            <div class="file-name">Source Code</div>
+                            <div class="file-meta">45 items</div>
+                        </div>
+
+                        <!-- Files -->
+                        <div class="file-card">
+                            <span class="file-icon">🖼️</span>
+                            <div class="file-name">hero-banner.jpg</div>
+                            <div class="file-meta">2.4 MB</div>
+                        </div>
+
+                        <div class="file-card selected">
+                            <span class="file-icon">📄</span>
+                            <div class="file-name">proposal_v2.pdf</div>
+                            <div class="file-meta">1.1 MB</div>
+                        </div>
+
+                        <div class="file-card">
+                            <span class="file-icon">📑</span>
+                            <div class="file-name">budget.xlsx</div>
+                            <div class="file-meta">45 KB</div>
+                        </div>
+
+                        <div class="file-card">
+                            <span class="file-icon">🎥</span>
+                            <div class="file-name">demo_video.mp4</div>
+                            <div class="file-meta">450 MB</div>
+                        </div>
+
+                        <div class="file-card">
+                            <span class="file-icon">📝</span>
+                            <div class="file-name">notes.txt</div>
+                            <div class="file-meta">1 KB</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+</body>
+
+</html>

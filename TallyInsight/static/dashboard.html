@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — TallyInsight</title>
+  <meta name="theme-color" content="#1a3c6e" />
+  <meta name="description" content="TallyInsight — Tally ERP Business Intelligence" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="TallyInsight" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" type="image/png" href="/static/assets/branding/favicon.png" />
+  <link rel="stylesheet" href="/static/css/tally-theme.css?v=2" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => { regs.forEach(reg => reg.update()); });
+      caches.keys().then(keys => { keys.filter(k => k.includes('v1')).forEach(k => caches.delete(k)); });
+    }
+  </script>
+  <style>
+    /* ── Page-specific styles ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    .table-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    @media (max-width: 600px) { .table-grid { grid-template-columns: 1fr; } }
+
+    .table-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      background: var(--gray-50);
+      border: 1px solid var(--border);
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .table-item:hover { background: #eef2ff; border-color: var(--tally-navy); }
+
+    .table-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: capitalize;
+    }
+    .table-count {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--tally-navy);
+      background: rgba(26,60,110,0.08);
+      padding: 2px 8px;
+      border-radius: 20px;
+      min-width: 36px;
+      text-align: center;
+    }
+    .table-count.zero { color: var(--text-muted); background: var(--gray-100); }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .section-header-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .section-header-icon.navy { background: rgba(26,60,110,0.1); color: var(--tally-navy); }
+    .section-header-icon.orange { background: rgba(244,121,32,0.1); color: var(--tally-orange); }
+    .section-header h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+    .section-header span { font-size: 0.78rem; color: var(--text-muted); margin-left: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="t-navbar">
+  <a href="/" class="t-navbar-brand">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="#1a3c6e"/>
+      <path d="M8 10h16M8 16h10M8 22h13" stroke="#f47920" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span>TallyInsight</span>
+  </a>
+  <div class="t-navbar-nav">
+    <a href="/sync.html" class="t-nav-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync
+    </a>
+    <a href="/audit.html" class="t-nav-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Audit
+    </a>
+  </div>
+  <div class="t-navbar-end">
+    <span class="t-status-dot" id="statusDot"></span>
+    <span class="t-status-text" id="statusText">Checking…</span>
+  </div>
+</nav>
+
+<!-- Toast container -->
+<div id="toastContainer" class="t-toast-container"></div>
+
+<!-- Main content -->
+<main class="t-container" style="padding-top:28px; padding-bottom:40px;">
+
+  <!-- Page header -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="/sync.html" class="t-btn t-btn-ghost t-btn-sm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <div>
+      <h1 id="pageTitle" style="font-size:1.4rem; font-weight:700; color:var(--tally-navy); margin:0;">Dashboard</h1>
+      <p id="pageSubtitle" style="font-size:0.85rem; color:var(--text-muted); margin:2px 0 0;">Overview of synced data from Tally</p>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="t-stat-grid" style="margin-bottom:24px;">
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(26,60,110,0.1); color:var(--tally-navy);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="totalRecords">—</div>
+        <div class="t-stat-label">Total Records</div>
+      </div>
+    </div>
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(244,121,32,0.1); color:var(--tally-orange);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="totalCompanies">—</div>
+        <div class="t-stat-label">Companies</div>
+      </div>
+    </div>
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="totalTables">32</div>
+        <div class="t-stat-label">Tables</div>
+      </div>
+    </div>
+    <div class="t-stat-card">
+      <div class="t-stat-icon" style="background:rgba(99,102,241,0.1); color:#6366f1;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="t-stat-body">
+        <div class="t-stat-value" id="lastSync">—</div>
+        <div class="t-stat-label">Last Sync</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables grid -->
+  <div class="dash-grid">
+    <!-- Master Tables -->
+    <div class="t-card">
+      <div class="t-card-header">
+        <div class="section-header">
+          <div class="section-header-icon navy">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          </div>
+          <div>
+            <h3>Master Tables <span id="masterCount"></span></h3>
+          </div>
+        </div>
+      </div>
+      <div class="t-card-body">
+        <div class="table-grid" id="masterTables">
+          <div style="color:var(--text-muted); font-size:0.85rem; grid-column:1/-1; text-align:center; padding:20px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction Tables -->
+    <div class="t-card">
+      <div class="t-card-header">
+        <div class="section-header">
+          <div class="section-header-icon orange">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <div>
+            <h3>Transaction Tables <span id="transactionCount"></span></h3>
+          </div>
+        </div>
+      </div>
+      <div class="t-card-body">
+        <div class="table-grid" id="transactionTables">
+          <div style="color:var(--text-muted); font-size:0.85rem; grid-column:1/-1; text-align:center; padding:20px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── Helpers ──
+  function fmt(n) {
+    if (n === undefined || n === null) return '—';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
+    return n.toLocaleString();
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 60000);
+      if (diff < 1)   return 'Just now';
+      if (diff < 60)  return diff + 'm ago';
+      if (diff < 1440) return Math.floor(diff / 60) + 'h ago';
+      return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+    } catch { return '—'; }
+  }
+
+  function showToast(msg, type = '') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 't-toast' + (type ? ' ' + type : '');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // ── Health check ──
+  async function checkHealth() {
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      const dot  = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      if (d.components && d.components.tally && d.components.tally.status === 'healthy') {
+        dot.className = 't-status-dot connected';
+        text.textContent = 'Tally: Connected';
+      } else {
+        dot.className = 't-status-dot disconnected';
+        text.textContent = 'Tally: Disconnected';
+      }
+    } catch {
+      document.getElementById('statusText').textContent = 'Offline';
+    }
+  }
+
+  // ── Dashboard data ──
+  const masterTables = [
+    'mst_group','mst_ledger','mst_stock_item','mst_stock_category',
+    'mst_stock_group','mst_godown','mst_uom','mst_vouchertype',
+    'mst_cost_category','mst_cost_centre','mst_currency','mst_employee',
+    'mst_attendance_type','mst_payhead','mst_gst_effective_rate',
+    'mst_opening_batch_allocation','mst_opening_bill_allocation',
+    'mst_stockitem_standard_cost','mst_stockitem_standard_price'
+  ];
+
+  const transactionTables = [
+    'trn_voucher','trn_accounting','trn_inventory','trn_batch',
+    'trn_cost_centre','trn_cost_category_centre','trn_cost_inventory_category_centre',
+    'trn_bill','trn_bank','trn_inventory_accounting',
+    'trn_employee','trn_payhead','trn_attendance','trn_closingstock_ledger'
+  ];
+
+  function renderTableGrid(containerId, tables, stats) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = tables.map(t => {
+      const count = stats[t] || 0;
+      const name  = t.replace(/^(mst_|trn_)/, '').replace(/_/g, ' ');
+      return `<div class="table-item">
+        <span class="table-name">${name}</span>
+        <span class="table-count${count === 0 ? ' zero' : ''}">${fmt(count)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadDashboard() {
+    const params = new URLSearchParams(window.location.search);
+    const company = params.get('company') || '';
+
+    if (company) {
+      document.getElementById('pageTitle').textContent = company;
+      document.getElementById('pageSubtitle').textContent = 'Company Dashboard — Synced Data Overview';
+      document.title = company + ' — TallyInsight';
+    }
+
+    try {
+      let endpoint = '/api/data/counts';
+      if (company) endpoint += '?company=' + encodeURIComponent(company);
+      const r = await fetch(endpoint);
+      if (!r.ok) throw new Error('counts failed');
+      const stats = await r.json();
+
+      // Total records
+      let total = 0;
+      Object.values(stats).forEach(v => { if (typeof v === 'number') total += v; });
+      document.getElementById('totalRecords').textContent = fmt(total);
+
+      // Companies
+      if (company) {
+        document.getElementById('totalCompanies').textContent = '1';
+      } else {
+        try {
+          const cr = await fetch('/api/data/synced-companies');
+          const cd = await cr.json();
+          document.getElementById('totalCompanies').textContent = cd.count || 0;
+        } catch { document.getElementById('totalCompanies').textContent = '—'; }
+      }
+
+      // Last sync
+      try {
+        if (company) {
+          const sr = await fetch('/api/data/synced-companies');
+          const sd = await sr.json();
+          const co = (sd.companies || []).find(c => c.company_name === company);
+          document.getElementById('lastSync').textContent = fmtTime(co?.last_sync_at);
+        } else {
+          const sr = await fetch('/api/sync/status');
+          const sd = await sr.json();
+          document.getElementById('lastSync').textContent = fmtTime(sd.completed_at);
+        }
+      } catch { /* ignore */ }
+
+      // Render tables
+      renderTableGrid('masterTables', masterTables, stats);
+      renderTableGrid('transactionTables', transactionTables, stats);
+
+      // Update counts in headers
+      const mTotal = masterTables.reduce((s, t) => s + (stats[t] || 0), 0);
+      const tTotal = transactionTables.reduce((s, t) => s + (stats[t] || 0), 0);
+      document.getElementById('masterCount').textContent = '(' + fmt(mTotal) + ' rows)';
+      document.getElementById('transactionCount').textContent = '(' + fmt(tTotal) + ' rows)';
+
+    } catch (err) {
+      console.error('Dashboard load error:', err);
+      showToast('Failed to load dashboard data', 'error');
+      document.getElementById('masterTables').innerHTML =
+        '<div style="color:var(--text-muted);font-size:0.85rem;grid-column:1/-1;text-align:center;padding:20px;">No data available</div>';
+      document.getElementById('transactionTables').innerHTML =
+        '<div style="color:var(--text-muted);font-size:0.85rem;grid-column:1/-1;text-align:center;padding:20px;">No data available</div>';
+    }
+  }
+
+  // ── Init ──
+  (function init() {
+    loadDashboard();
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  })();
+</script>
+</body>
+</html>

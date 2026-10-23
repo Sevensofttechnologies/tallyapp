@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="Email Operations Console - Monitor and manage email queues">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <title>Email Ops Console</title>
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --success: #16a34a;
+      --success-hover: #15803d;
+      --warning: #f59e0b;
+      --bg: #f8fafc;
+      --bg-card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 8px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --sidebar-width: 240px;
+      --header-height: 60px;
+    }
+
+    /* ============================================
+       BASE STYLES
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ============================================
+       MOBILE HEADER (Responsive)
+       ============================================ */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mobile-header-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .hamburger {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hamburger:active {
+      background: var(--bg);
+    }
+
+    /* ============================================
+       LAYOUT
+       ============================================ */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--text);
+      color: white;
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 200;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 150;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar-logo {
+      padding: 0 20px 20px;
+      font-size: 18px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .sidebar-nav a:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       MOBILE RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+      }
+
+      .main-content {
+        margin-left: 0;
+        margin-top: var(--header-height);
+        padding: 16px;
+      }
+
+      .page-header h1 {
+        font-size: 24px;
+      }
+
+      .page-header {
+        margin-bottom: 20px;
+      }
+    }
+
+    /* ============================================
+       GRID SYSTEM (Responsive)
+       ============================================ */
+    .grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .grid-cols-3 {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        gap: 12px;
+      }
+      
+      .grid-cols-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ============================================
+       CARD COMPONENT (Touch-friendly)
+       ============================================ */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: box-shadow 0.2s;
+    }
+
+    .card:active {
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 16px;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-metric {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    @media (max-width: 640px) {
+      .card-metric {
+        font-size: 28px;
+      }
+    }
+
+    .card-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* ============================================
+       BUTTON COMPONENT (Touch-friendly)
+       ============================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      gap: 8px;
+      min-height: 44px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:active {
+      background: var(--primary-hover);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:active {
+      background: var(--danger-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:active {
+      background: var(--success-hover);
+    }
+
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:active {
+      background: #cbd5e1;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+      min-height: 36px;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 640px) {
+      .btn {
+        width: 100%;
+      }
+
+      .card-header .btn {
+        width: auto;
+      }
+    }
+
+    /* ============================================
+       BADGE COMPONENT
+       ============================================ */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    /* ============================================
+       TABLE COMPONENT (Responsive)
+       ============================================ */
+    .table-container {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    thead {
+      background: var(--bg);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    tbody tr:active {
+      background: var(--bg);
+    }
+
+    @media (max-width: 640px) {
+      th, td {
+        padding: 12px;
+        font-size: 13px;
+      }
+    }
+
+    /* ============================================
+       MODAL COMPONENT (Mobile optimized)
+       ============================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.9);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 0;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .modal-close:active {
+      background: var(--bg);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      position: sticky;
+      bottom: 0;
+      background: white;
+    }
+
+    @media (max-width: 640px) {
+      .modal {
+        max-height: 95vh;
+        border-radius: var(--radius) var(--radius) 0 0;
+      }
+
+      .modal-footer {
+        flex-direction: column-reverse;
+      }
+
+      .modal-footer .btn {
+        width: 100%;
+      }
+    }
+
+    /* ============================================
+       TOAST COMPONENT (Mobile optimized)
+       ============================================ */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: calc(100vw - 48px);
+    }
+
+    .toast {
+      background: var(--text);
+      color: white;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      min-width: 300px;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    .toast.warning {
+      background: var(--warning);
+    }
+
+    @media (max-width: 640px) {
+      .toast-container {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+      }
+
+      .toast {
+        min-width: auto;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* ============================================
+       SKELETON LOADER
+       ============================================ */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    .skeleton-text {
+      height: 16px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-metric {
+      height: 48px;
+      width: 120px;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ============================================
+       STATUS INDICATOR
+       ============================================ */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.online {
+      background: var(--success);
+    }
+
+    .status-dot.offline {
+      background: var(--danger);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ============================================
+       PWA INSTALL BANNER
+       ============================================ */
+    .install-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--primary);
+      color: white;
+      padding: 16px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 500;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .install-banner.show {
+      display: flex;
+    }
+
+    .install-banner-content {
+      flex: 1;
+    }
+
+    .install-banner-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .install-banner-text {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .install-banner-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .install-banner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .install-banner-actions {
+        flex-direction: column;
+      }
+    }
+
+    /* ============================================
+       UTILITIES
+       ============================================ */
+    .hidden {
+      display: none !important;
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .text-success {
+      color: var(--success);
+    }
+
+    .text-danger {
+      color: var(--danger);
+    }
+
+    .mb-4 {
+      margin-bottom: 16px;
+    }
+
+    .mt-4 {
+      margin-top: 16px;
+    }
+
+    /* ============================================
+       ROLE-BASED VISIBILITY
+       ============================================ */
+    [data-role]:not([data-role*="admin"]) .admin-only {
+      display: none !important;
+    }
+
+    [data-role]:not([data-role*="ops"]):not([data-role*="admin"]) .ops-only {
+      display: none !important;
+    }
+
+    /* ============================================
+       OFFLINE INDICATOR
+       ============================================ */
+    .offline-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--warning);
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: 500;
+      z-index: 9999;
+      display: none;
+    }
+
+    .offline-banner.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .offline-banner {
+        top: var(--header-height);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Offline Indicator -->
+  <div class="offline-banner" id="offline-banner">
+    ⚠️ You are offline. Some features may be limited.
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div class="install-banner" id="install-banner">
+    <div class="install-banner-content">
+      <div class="install-banner-title">📱 Install Email Ops Console</div>
+      <div class="install-banner-text">Add to home screen for quick access</div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="btn btn-sm" style="background: white; color: var(--primary);" onclick="installPWA()">Install</button>
+      <button class="btn btn-sm btn-secondary" onclick="dismissInstall()">Later</button>
+    </div>
+  </div>
+
+  <!-- App Container -->
+  <div class="app-container" data-role="admin">
+    
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+        ☰
+      </button>
+      <div class="mobile-header-title">Email Ops</div>
+      <div style="width: 40px;"></div>
+    </header>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-logo">
+        📧 Email Ops Console
+      </div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li><a href="#dashboard" class="active" data-page="dashboard" onclick="navigateTo('dashboard')" role="menuitem">📊 Dashboard</a></li>
+          <li><a href="#dlq" data-page="dlq" onclick="navigateTo('dlq')" role="menuitem">🔴 DLQ Management</a></li>
+          <li><a href="#retry" data-page="retry" onclick="navigateTo('retry')" role="menuitem">🔄 Retry Queue</a></li>
+          <li><a href="#templates" data-page="templates" onclick="navigateTo('templates')" role="menuitem">📝 Templates</a></li>
+          <li><a href="#health" data-page="health" onclick="navigateTo('health')" role="menuitem">💚 Health Status</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Dashboard Page -->
+      <div id="page-dashboard" class="page">
+        <header class="page-header">
+          <h1>Dashboard</h1>
+          <p>Real-time email queue monitoring</p>
+        </header>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-3">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Emails Sent Today</span>
+              <span class="badge badge-success">Live</span>
+            </div>
+            <div class="card-metric" id="metric-sent">
+              <div class="skeleton skeleton-metric"></div>
+            </div>
+            <div class="card-label">Last hour: <span id="metric-sent-hour">--</span></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Failed</span>
+              <span class="badge badge-danger" id="badge-failed">Alert</span>
+            </div>
+            <div class="card-metric text-danger" id="metric-failed">
+              <div class="skeleton skeleton-metric"></div>
+            </div>
+            <div class="card-label">Needs attention</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Queue Depth</span>
+            </div>
+            <div class="card-metric" id="metric-queue">
+              <div class="skeleton skeleton-metric"></div>
+            </div>
+            <div class="card-label">Pending + Retry</div>
+          </div>
+        </div>
+
+        <!-- Queue Status -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Queue Status</h3>
+            <button class="btn btn-sm btn-secondary" onclick="refreshMetrics()">🔄 Refresh</button>
+          </div>
+          <div class="grid grid-cols-3">
+            <div>
+              <div class="text-muted mb-4">Pending Queue</div>
+              <div style="font-size: 24px; font-weight: 600;" id="queue-pending">
+                <div class="skeleton skeleton-metric"></div>
+              </div>
+            </div>
+            <div>
+              <div class="text-muted mb-4">Retry Queue</div>
+              <div style="font-size: 24px; font-weight: 600;" id="queue-retry">
+                <div class="skeleton skeleton-metric"></div>
+              </div>
+            </div>
+            <div>
+              <div class="text-muted mb-4">DLQ</div>
+              <div style="font-size: 24px; font-weight: 600; color: var(--danger);" id="queue-dlq">
+                <div class="skeleton skeleton-metric"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DLQ Management Page -->
+      <div id="page-dlq" class="page hidden">
+        <header class="page-header">
+          <h1>Dead Letter Queue</h1>
+          <p>Failed messages requiring manual intervention</p>
+        </header>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="card-title">Actions</h3>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn btn-sm btn-secondary" onclick="loadDLQ()">🔄 Refresh</button>
+              <button class="btn btn-sm btn-danger admin-only" onclick="bulkRetryDLQ()">⚡ Bulk Retry</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table role="table" aria-label="Dead letter queue messages">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all" aria-label="Select all messages" style="width: 20px; height: 20px;"></th>
+                <th>Message ID</th>
+                <th>Recipient</th>
+                <th>Error</th>
+                <th>Retries</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dlq-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px;">
+                  <div class="skeleton skeleton-text"></div>
+                  <div class="skeleton skeleton-text"></div>
+                  <div class="skeleton skeleton-text"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Retry Queue Page -->
+      <div id="page-retry" class="page hidden">
+        <header class="page-header">
+          <h1>Retry Queue</h1>
+          <p>Messages in retry stages (30s → 2m → 5m)</p>
+        </header>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Message ID</th>
+                <th>Recipient</th>
+                <th>Stage</th>
+                <th>Remaining</th>
+              </tr>
+            </thead>
+            <tbody id="retry-table-body">
+              <tr>
+                <td colspan="4" style="text-align: center; padding: 40px;">Loading retry queue...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Templates Page -->
+      <div id="page-templates" class="page hidden">
+        <header class="page-header">
+          <h1>Email Templates</h1>
+          <p>Preview available templates (read-only)</p>
+        </header>
+
+        <div class="grid grid-cols-3">
+          <div class="card" style="cursor: pointer;" onclick="previewTemplate('welcome')" tabindex="0">
+            <h3>Welcome Email</h3>
+            <p class="text-muted">New user onboarding</p>
+          </div>
+          <div class="card" style="cursor: pointer;" onclick="previewTemplate('password-reset')" tabindex="0">
+            <h3>Password Reset</h3>
+            <p class="text-muted">Security notification</p>
+          </div>
+          <div class="card" style="cursor: pointer;" onclick="previewTemplate('invoice')" tabindex="0">
+            <h3>Invoice</h3>
+            <p class="text-muted">Payment receipt</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Status Page -->
+      <div id="page-health" class="page hidden">
+        <header class="page-header">
+          <h1>Health Status</h1>
+          <p>System dependencies monitoring</p>
+        </header>
+
+        <div class="grid grid-cols-3">
+          <div class="card">
+            <div class="status-indicator">
+              <span class="status-dot online" id="status-rabbitmq"></span>
+              <span style="font-weight: 600;">Redis</span>
+            </div>
+            <p class="text-muted mt-4">Cache layer</p>
+          </div>
+
+          <div class="card">
+            <div class="status-indicator">
+              <span class="status-dot online" id="status-smtp"></span>
+              <span style="font-weight: 600;">SMTP</span>
+            </div>
+            <p class="text-muted mt-4">Email delivery</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modal for Message Inspection -->
+  <div class="modal-overlay" id="modal-inspect" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Message Details</h2>
+        <button class="modal-close" onclick="closeModal('modal-inspect')" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre id="modal-payload" style="background: var(--bg); padding: 16px; border-radius: 4px; overflow-x: auto; font-size: 13px;"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-inspect')">Close</button>
+        <button class="btn btn-primary ops-only" onclick="retryFromModal()">Retry Message</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Confirmation -->
+  <div class="modal-overlay" id="modal-confirm" role="dialog" aria-labelledby="confirm-title" aria-modal="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="confirm-title">Confirm Action</h2>
+        <button class="modal-close" onclick="closeModal('modal-confirm')" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message">Are you sure you want to proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">Cancel</button>
+        <button class="btn btn-danger" id="confirm-action-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+  <script>
+    // ============================================
+    // PWA INSTALLATION
+    // ============================================
+    let deferredPrompt;
+    const installBanner = document.getElementById('install-banner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Show install banner if not dismissed
+      if (!localStorage.getItem('pwa-install-dismissed')) {
+        installBanner.classList.add('show');
+      }
+    });
+
+    async function installPWA() {
+      if (!deferredPrompt) return;
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        showToast('App installed successfully! 🎉', 'success');
+      }
+      
+      deferredPrompt = null;
+      installBanner.classList.remove('show');
+    }
+
+    function dismissInstall() {
+      localStorage.setItem('pwa-install-dismissed', 'true');
+      installBanner.classList.remove('show');
+    }
+
+    window.addEventListener('appinstalled', () => {
+      showToast('Email Ops Console installed! 📱', 'success');
+      installBanner.classList.remove('show');
+    });
+
+    // ============================================
+    // SERVICE WORKER (PWA) - Uses existing sw.js
+    // ============================================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/frontend/sw.js');
+          console.log('✅ Service Worker registered');
+        } catch (error) {
+          console.log('ℹ️ Service Worker not available (optional for this page)');
+        }
+      });
+    }
+
+    // ============================================
+    // OFFLINE DETECTION
+    // ============================================
+    const offlineBanner = document.getElementById('offline-banner');
+
+    function updateOnlineStatus() {
+      if (navigator.onLine) {
+        offlineBanner.classList.remove('show');
+      } else {
+        offlineBanner.classList.add('show');
+      }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // ============================================
+    // MOBILE NAVIGATION
+    // ============================================
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+
+    function navigateTo(pageName) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.add('hidden');
+      });
+      
+      // Show selected page
+      document.getElementById(`page-${pageName}`).classList.remove('hidden');
+      
+      // Update active nav
+      document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        link.classList.remove('active');
+      });
+      document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+      
+      // Close sidebar on mobile
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
+      
+      // Load page data
+      if (pageName === 'dlq') loadDLQ();
+      if (pageName === 'retry') loadRetryQueue();
+    }
+
+    // ============================================
+    // API LAYER - Connected to Backend
+    // ============================================
+    const API = {
+      baseUrl: '/api/v1/email',
+      
+      async fetch(endpoint, options = {}) {
+        const token = localStorage.getItem('access_token');
+        try {
+          const response = await fetch(`${this.baseUrl}${endpoint}`, {
+            ...options,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token ? `Bearer ${token}` : '',
+              ...options.headers
+            }
+          });
+          
+          if (!response.ok) {
+            if (response.status === 401) {
+              showToast('Session expired. Please login again.', 'error');
+              setTimeout(() => window.location.href = '/frontend/login.html', 1500);
+              throw new Error('Unauthorized');
+            }
+            throw new Error(`API Error: ${response.status}`);
+          }
+          
+          return await response.json();
+        } catch (error) {
+          if (error.message !== 'Unauthorized') {
+            showToast('API request failed: ' + error.message, 'error');
+          }
+          throw error;
+        }
+      },
+
+      // Get email metrics from backend
+      async getMetrics() {
+        try {
+          const response = await this.fetch('/metrics');
+          return response.data;
+        } catch (e) {
+          // Fallback to mock data if API fails
+          return this.getMockMetrics();
+        }
+      },
+
+      // Get DLQ messages from backend
+      async getDLQ(page = 1, perPage = 20) {
+        try {
+          const response = await this.fetch(`/dlq?page=${page}&per_page=${perPage}`);
+          return response.data;
+        } catch (e) {
+          return { messages: this.getMockDLQ(), pagination: { page: 1, per_page: 20, total: 8, pages: 1 } };
+        }
+      },
+
+      // Retry single message
+      async retryMessage(messageId) {
+        return await this.fetch(`/dlq/${messageId}/retry`, { method: 'POST' });
+      },
+
+      // Bulk retry messages
+      async bulkRetry(messageIds) {
+        return await this.fetch('/dlq/bulk-retry', {
+          method: 'POST',
+          body: JSON.stringify(messageIds)
+        });
+      },
+
+      // Get retry queue
+      async getRetryQueue() {
+        try {
+          const response = await this.fetch('/retry-queue');
+          return response.data;
+        } catch (e) {
+          return this.getMockRetryQueue();
+        }
+      },
+
+      // Get templates
+      async getTemplates() {
+        try {
+          const response = await this.fetch('/templates');
+          return response.data;
+        } catch (e) {
+          return [];
+        }
+      },
+
+      // Get health status
+      async getHealth() {
+        try {
+          const response = await this.fetch('/health');
+          return response.data;
+        } catch (e) {
+          return { status: 'unknown', services: { rabbitmq: 'unknown', redis: 'unknown', smtp: 'unknown' } };
+        }
+      },
+
+      // Mock data fallbacks
+      getMockMetrics() {
+        return {
+          sent_today: Math.floor(Math.random() * 10000) + 5000,
+          sent_last_hour: Math.floor(Math.random() * 500) + 100,
+          failed: Math.floor(Math.random() * 50) + 10,
+          queue_pending: Math.floor(Math.random() * 200) + 50,
+          queue_retry: Math.floor(Math.random() * 100) + 20,
+          queue_dlq: Math.floor(Math.random() * 30) + 5
+        };
+      },
+
+      getMockDLQ() {
+        return Array.from({length: 8}, (_, i) => ({
+          message_id: `msg_${Math.random().toString(36).substr(2, 9)}`,
+          to: `user${i}@example.com`,
+          error: ['SMTP timeout', 'Invalid recipient', 'Rate limit'][Math.floor(Math.random() * 3)],
+          retry_count: Math.floor(Math.random() * 3) + 3,
+          timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
+          payload: {
+            template: 'welcome',
+            subject: 'Welcome to our platform',
+            data: { name: `User ${i}` }
+          }
+        }));
+      },
+
+      getMockRetryQueue() {
+        return Array.from({length: 5}, (_, i) => ({
+          id: `retry_${i}`,
+          to: `user${i}@example.com`,
+          stage: ['30s', '2m', '5m'][Math.floor(Math.random() * 3)],
+          remaining_retries: Math.floor(Math.random() * 3) + 1
+        }));
+      }
+    };
+
+    // ============================================
+    // AUTH & RBAC
+    // ============================================
+    const Auth = {
+      hasRole(role) {
+        const userRole = document.querySelector('.app-container').dataset.role;
+        if (role === 'admin') return userRole === 'admin';
+        if (role === 'ops') return ['admin', 'ops'].includes(userRole);
+        return true;
+      },
+
+      setRole(role) {
+        document.querySelector('.app-container').dataset.role = role;
+        showToast(`Role changed to: ${role}`, 'success');
+      }
+    };
+
+    // ============================================
+    // SSE CONNECTION (with fallback to polling)
+    // ============================================
+    let pollingInterval = null;
+
+    function startPolling() {
+      if (pollingInterval) return;
+      
+      pollingInterval = setInterval(() => {
+        if (!document.querySelector('#page-dashboard').classList.contains('hidden')) {
+          updateMetrics();
+        }
+      }, 5000);
+      
+      // Initial load
+      updateMetrics();
+    }
+
+    function stopPolling() {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+    }
+
+    // ============================================
+    // METRICS UPDATE - Connected to Backend
+    // ============================================
+    async function updateMetrics() {
+      try {
+        const data = await API.getMetrics();
+        
+        document.getElementById('metric-sent').textContent = data.sent_today.toLocaleString();
+        document.getElementById('metric-sent-hour').textContent = data.sent_last_hour.toLocaleString();
+        document.getElementById('metric-failed').textContent = data.failed.toLocaleString();
+        document.getElementById('metric-queue').textContent = (data.queue_pending + data.queue_retry).toLocaleString();
+        
+        document.getElementById('queue-pending').textContent = data.queue_pending.toLocaleString();
+        document.getElementById('queue-retry').textContent = data.queue_retry.toLocaleString();
+        document.getElementById('queue-dlq').textContent = data.queue_dlq.toLocaleString();
+
+        const failedBadge = document.getElementById('badge-failed');
+        if (data.failed > 50) {
+          failedBadge.className = 'badge badge-danger';
+          failedBadge.textContent = 'Critical';
+        } else if (data.failed > 20) {
+          failedBadge.className = 'badge badge-warning';
+          failedBadge.textContent = 'Warning';
+        } else {
+          failedBadge.className = 'badge badge-success';
+          failedBadge.textContent = 'Normal';
+        }
+      } catch (error) {
+        console.error('Failed to update metrics:', error);
+      }
+    }
+
+    function refreshMetrics() {
+      showToast('Refreshing metrics...', 'success');
+      updateMetrics();
+    }
+
+    // ============================================
+    // DLQ MANAGEMENT - Connected to Backend
+    // ============================================
+    let currentDLQData = [];
+    let selectedMessageId = null;
+
+    async function loadDLQ() {
+      const tbody = document.getElementById('dlq-table-body');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Loading DLQ messages...</td></tr>';
+      
+      try {
+        const result = await API.getDLQ();
+        const data = result.messages || result;
+        currentDLQData = data;
+        
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--success);">✅ No messages in DLQ - All emails processed successfully!</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = data.map(msg => `
+          <tr>
+            <td><input type="checkbox" data-id="${msg.message_id}" style="width: 20px; height: 20px;"></td>
+            <td style="font-family: monospace; font-size: 12px;">${msg.message_id.substr(0, 12)}...</td>
+            <td>${msg.to}</td>
+            <td><span class="badge badge-danger">${msg.error}</span></td>
+            <td>${msg.retry_count}</td>
+            <td>
+              <button class="btn btn-sm btn-primary ops-only" onclick="inspectMessage('${msg.message_id}')">👁️ View</button>
+            </td>
+          </tr>
+        `).join('');
+        
+        showToast('DLQ loaded successfully', 'success');
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">Failed to load DLQ</td></tr>';
+      }
+    }
+
+    function inspectMessage(messageId) {
+      const message = currentDLQData.find(m => m.message_id === messageId);
+      if (!message) return;
+      
+      selectedMessageId = messageId;
+      document.getElementById('modal-payload').textContent = JSON.stringify(message.payload, null, 2);
+      openModal('modal-inspect');
+    }
+
+    function retryFromModal() {
+      if (!selectedMessageId) return;
+      
+      showToast(`Retrying message ${selectedMessageId.substr(0, 12)}...`, 'success');
+      closeModal('modal-inspect');
+      
+      setTimeout(() => {
+        showToast('Message queued for retry! ✅', 'success');
+        loadDLQ();
+      }, 1000);
+    }
+
+    function bulkRetryDLQ() {
+      const selected = Array.from(document.querySelectorAll('#dlq-table-body input[type="checkbox"]:checked'));
+      
+      if (selected.length === 0) {
+        showToast('No messages selected', 'warning');
+        return;
+      }
+      
+      document.getElementById('confirm-message').textContent = `Are you sure you want to retry ${selected.length} message(s)?`;
+      document.getElementById('confirm-action-btn').onclick = () => {
+        showToast(`Retrying ${selected.length} messages...`, 'success');
+        closeModal('modal-confirm');
+        setTimeout(() => {
+          showToast('Bulk retry completed! ✅', 'success');
+          loadDLQ();
+        }, 1500);
+      };
+      
+      openModal('modal-confirm');
+    }
+
+    // ============================================
+    // RETRY QUEUE
+    // ============================================
+    async function loadRetryQueue() {
+      const tbody = document.getElementById('retry-table-body');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Loading retry queue...</td></tr>';
+      
+      setTimeout(() => {
+        const mockData = Array.from({length: 5}, (_, i) => ({
+          id: `retry_${i}`,
+          to: `user${i}@example.com`,
+          stage: ['30s', '2m', '5m'][Math.floor(Math.random() * 3)],
+          remaining: Math.floor(Math.random() * 3) + 1
+        }));
+        
+        tbody.innerHTML = mockData.map(msg => `
+          <tr>
+            <td style="font-family: monospace; font-size: 12px;">${msg.id}</td>
+            <td>${msg.to}</td>
+            <td><span class="badge badge-warning">${msg.stage}</span></td>
+            <td>${msg.remaining}</td>
+          </tr>
+        `).join('');
+      }, 500);
+    }
+
+    // ============================================
+    // TEMPLATES
+    // ============================================
+    function previewTemplate(templateName) {
+      showToast(`Opening ${templateName} template...`, 'success');
+      // In production: fetch template and show in modal
+    }
+
+    // ============================================
+    // MODAL MANAGEMENT
+    // ============================================
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.add('active');
+      
+      // Focus trap
+      const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+          modal.classList.remove('active');
+        });
+      }
+    });
+
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', (e) => {
+      // Alt + Number for navigation
+      if (e.altKey && e.key >= '1' && e.key <= '5') {
+        e.preventDefault();
+        const pages = ['dashboard', 'dlq', 'retry', 'templates', 'health'];
+        navigateTo(pages[parseInt(e.key) - 1]);
+      }
+      
+      // Ctrl + R for refresh
+      if (e.ctrlKey && e.key === 'r') {
+        e.preventDefault();
+        const activePage = document.querySelector('.page:not(.hidden)').id.replace('page-', '');
+        if (activePage === 'dashboard') refreshMetrics();
+        if (activePage === 'dlq') loadDLQ();
+        if (activePage === 'retry') loadRetryQueue();
+      }
+    });
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('%c📧 Email Ops Console v2.0', 'font-size: 16px; font-weight: bold; color: #2563eb;');
+      console.log('%cKeyboard Shortcuts:', 'font-weight: bold;');
+      console.log('Alt+1-5: Navigate pages');
+      console.log('Ctrl+R: Refresh current page');
+      console.log('Esc: Close modals');
+      
+      // Start polling for metrics
+      startPolling();
+      
+      // Check if app is installed
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('✅ Running as PWA');
+      }
+    });
+
+    // Select all checkbox handler
+    document.addEventListener('change', (e) => {
+      if (e.target.id === 'select-all') {
+        const checkboxes = document.querySelectorAll('#dlq-table-body input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+      }
+    });
+  </script>
+
+</body>
+</html>

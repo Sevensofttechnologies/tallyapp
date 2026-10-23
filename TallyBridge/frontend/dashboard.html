@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="manifest" href="manifest.json">
+  <title>Dashboard - VanillaNext</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/widgets.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+  <link rel="stylesheet" href="css/utils/customizer.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Admin Specific Layout Overrides */
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .admin-sidebar {
+      width: 180px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      z-index: 50;
+      transition: transform 0.3s;
+    }
+
+    .admin-main {
+      flex: 1;
+      margin-left: 180px;
+      background: var(--bg-body);
+      display: flex;
+      flex-direction: column;
+      transition: margin 0.3s;
+    }
+
+    .admin-header {
+      height: 48px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .admin-main {
+        margin-left: 0;
+      }
+    }
+
+    .sidebar-brand {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--primary-600);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-nav {
+      padding: 8px 0;
+      flex: 1;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      padding: 6px 16px;
+      color: var(--gray-600);
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: var(--primary-50);
+      color: var(--primary-600);
+      border-right: 3px solid var(--primary-600);
+    }
+
+    .sidebar-icon {
+      width: 16px;
+      text-align: center;
+      margin-right: 8px;
+    }
+
+    .loading-skeleton {
+      animation: pulse 1.5s infinite;
+      background: var(--gray-200);
+      color: transparent;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- PWA Banners -->
+  <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+  <div id="install-banner" class="install-banner">
+    <div class="install-banner-content">
+      <div class="install-banner-title">Install VanillaNext</div>
+      <div class="install-banner-text">Add to home screen for quick access</div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+      <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+    </div>
+  </div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="sidebar-brand">⚡ VanillaNext</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link active"><span class="sidebar-icon">📊</span> Dashboard</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+        <a href="users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+        <a href="audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+        <a href="tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+        <a href="reports/vouchers.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Reports</a>
+        <a href="companies.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🏢</span>
+          Companies</a>
+        <a href="permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span>
+          Permissions</a>
+
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+        <a href="email-settings.html" class="sidebar-link admin-only"><span class="sidebar-icon">✉️</span> Email Settings</a>
+        <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+        <a href="#" onclick="Auth.logout()" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span>
+          Logout</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200">
+        <a href="profile.html" class="flex items-center gap-3 text-gray-900 hover:text-primary-600 transition">
+          <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold"
+            id="user-initials">U</div>
+          <div class="text-sm">
+            <div class="font-bold" id="user-name">User</div>
+            <div class="text-muted text-xs" id="user-role-display">Role</div>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="flex items-center gap-4">
+          <button class="btn btn-ghost lg:hidden" onclick="toggleSidebar()">☰</button>
+          <h2 class="text-lg font-bold">Dashboard</h2>
+        </div>
+        <div class="flex gap-4 items-center">
+          <!-- Company Selector -->
+          <div class="relative">
+            <select id="company-select" class="form-input form-select-sm" onchange="switchCompany(this.value)">
+              <option value="">Select Company...</option>
+            </select>
+          </div>
+
+          <button class="btn btn-sm btn-ghost relative" data-toggle="notifications">
+            🔔 <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger border border-white"></span>
+          </button>
+          <button class="btn btn-sm btn-ghost" data-toggle="theme">🌙</button>
+        </div>
+      </header>
+
+      <div class="p-4 w-full">
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="card stat-card p-6">
+            <div class="text-muted text-sm uppercase mb-2">My Companies</div>
+            <div class="text-3xl font-bold" id="stat-companies">-</div>
+          </div>
+          <div class="card stat-card p-6">
+            <div class="text-muted text-sm uppercase mb-2">Active Users</div>
+            <div class="text-3xl font-bold text-primary-600" id="stat-users">-</div>
+            <div class="text-xs text-muted mt-1">In selected company</div>
+          </div>
+          <div class="card stat-card p-6">
+            <div class="text-muted text-sm uppercase mb-2">System Status</div>
+            <div class="text-3xl font-bold text-success">Online</div>
+            <div class="text-xs text-muted mt-1">API v1.0.0</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Activity Feed (Mock for now) -->
+          <div class="lg:col-span-2">
+            <div class="card p-6 mb-6">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold">Recent Activity</h3>
+                <button class="btn btn-sm btn-ghost">View All</button>
+              </div>
+              <table class="table w-full">
+                <thead>
+                  <tr class="text-left text-sm text-muted">
+                    <th>Action</th>
+                    <th>User</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody class="text-sm" id="activity-table-body">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="space-y-6">
+            <div class="card p-6">
+              <h3 class="font-bold mb-4">Quick Actions</h3>
+              <div class="grid grid-cols-2 gap-2">
+                <a href="users.html" class="btn btn-outline btn-sm">Add User</a>
+                <a href="companies.html" class="btn btn-outline btn-sm">New Company</a>
+                <a href="audit.html" class="btn btn-outline btn-sm">View Logs</a>
+                <a href="profile.html" class="btn btn-outline btn-sm">Edit Profile</a>
+              </div>
+            </div>
+
+            <div class="card p-6 bg-gradient-to-br from-primary-600 to-primary-800 text-white">
+              <h3 class="font-bold mb-2">Need Help?</h3>
+              <p class="text-sm opacity-80 mb-4">Check our documentation for advanced guidelines.</p>
+              <button class="btn btn-sm btn-white text-primary-700">Read Docs</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Create Company Modal (Forced if no company) -->
+  <div class="modal" id="modal-company">
+    <div class="modal-header">
+      <h2 class="modal-title">Create Your First Company</h2>
+      <!-- No close button here intentionally for forced flow -->
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-muted mb-4">You need to create a company to start using the system.</p>
+      <form id="company-form">
+        <div class="form-group mb-4">
+          <label class="form-label">Company Name *</label>
+          <input type="text" id="company-name" class="form-input" required>
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Description</label>
+          <textarea id="company-description" class="form-input" rows="3"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary w-full" onclick="createFirstCompany()">Create Company</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/core/Component.js"></script>
+  <script src="js/core/ThemeManager.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+
+  <script>
+    // Initialize Theme
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.init();
+    }
+
+    // Sidebar Toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Data Loading Logic
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Auth Check
+      if (!Auth.isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // 2. Load User Info
+      const user = Auth.getUser();
+      if (user) {
+        document.getElementById('user-name').textContent = `${user.first_name} ${user.last_name}`;
+        document.getElementById('user-role-display').textContent = Utils.capitalize(user.role);
+        document.getElementById('user-initials').textContent = Utils.getInitials(`${user.first_name} ${user.last_name}`);
+      }
+
+      // 3. Load Companies (Critical Flow)
+      try {
+        const response = await API.companies.list();
+        if (response.success) {
+          const companies = response.data;
+          document.getElementById('stat-companies').textContent = companies.length;
+
+          // Update localStorage with fresh company count
+          localStorage.setItem('company_count', companies.length);
+
+          const select = document.getElementById('company-select');
+          select.innerHTML = '<option value="">Select Company...</option>' +
+            companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+          // Enforced Flow Logic - REDIRECT TO SYNC IF NO COMPANIES
+          // But don't redirect if user explicitly came from sync page with a company
+          const activeCompanyName = localStorage.getItem('active_company');
+          if (companies.length === 0 && !activeCompanyName) {
+            // No Companies and no active company -> Redirect to Tally Sync
+            window.location.href = 'tally-sync.html';
+            return;
+          } else if (companies.length === 0 && activeCompanyName) {
+            // Companies synced in TallyInsight but not yet in TallyBridge
+            // Show message and don't redirect
+            Toast.warning(`Company "${activeCompanyName}" is syncing. Please wait...`);
+            document.getElementById('stat-companies').textContent = '1 (syncing)';
+          } else {
+            // CASE 2: Companies Exist
+            const activeCompany = Auth.getActiveCompany();
+
+            // Auto-select if no active company or active company not in list
+            const isValidActive = activeCompany && companies.find(c => c.id === activeCompany.id);
+
+            if (isValidActive) {
+              select.value = activeCompany.id;
+              loadCompanyStats(activeCompany.id);
+            } else {
+              // Default to first company
+              const defaultCompany = companies[0];
+              Auth.setActiveCompany(defaultCompany);
+              select.value = defaultCompany.id;
+              Toast.info(`Auto-selected "${defaultCompany.name}"`);
+              loadCompanyStats(defaultCompany.id);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load companies", e);
+        Toast.error("Failed to load system data");
+      }
+
+      // 4. Load Mock Activity
+      loadMockActivity();
+    });
+
+    async function createFirstCompany() {
+      const name = document.getElementById('company-name').value;
+      const desc = document.getElementById('company-description').value;
+
+      if (!name) {
+        Toast.error('Company Name is required');
+        return;
+      }
+
+      try {
+        const res = await API.companies.create({
+          name: name,
+          description: desc
+        });
+        if (res.success || res.id) { // Handle varies API responses
+          Toast.success('Company created successfully!');
+          Modal.close('modal-company');
+          // Reload page to trigger auto-select logic
+          setTimeout(() => location.reload(), 1000);
+        }
+      } catch (e) {
+        Toast.error(e.detail || 'Failed to create company');
+      }
+    }
+
+    async function switchCompany(companyId) {
+      if (!companyId) return;
+      try {
+        const response = await API.companies.select(companyId); // Assuming select endpoint exists or we just find it locally
+        // Actually API.companies.select calls backend to switch token context usually, 
+        // but here we just need to update local storage if we already have list.
+        // Let's rely on finding it in the list we fetched.
+        // Re-fetch list to get object
+        const listRes = await API.companies.list();
+        const company = listRes.data.find(c => c.id == companyId);
+        if (company) {
+          Auth.setActiveCompany(company);
+          Toast.success(`Switched to ${company.name}`);
+          loadCompanyStats(companyId);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadCompanyStats(companyId) {
+      document.getElementById('stat-users').innerHTML = '<span class="loading-skeleton">...</span>';
+      try {
+        const res = await API.users.list(companyId);
+        if (res.success) {
+          document.getElementById('stat-users').textContent = res.data.length;
+        }
+      } catch (e) {
+        document.getElementById('stat-users').textContent = "0";
+      }
+    }
+
+    function loadMockActivity() {
+      const tbody = document.getElementById('activity-table-body');
+      const activities = [
+        { action: "Login", user: "Admin", time: "Just now", status: "success" },
+        { action: "Update Profile", user: "John Doe", time: "2 mins ago", status: "success" },
+        { action: "Failed Login", user: "Unknown", time: "1 hour ago", status: "danger" }
+      ];
+
+      tbody.innerHTML = activities.map(a => `
+                <tr>
+                    <td class="font-medium">${a.action}</td>
+                    <td>${a.user}</td>
+                    <td class="text-muted">${a.time}</td>
+                    <td><span class="badge badge-${a.status}">${a.status === 'success' ? 'Success' : 'Failed'}</span></td>
+                </tr>
+            `).join('');
+    }
+  </script>
+  <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

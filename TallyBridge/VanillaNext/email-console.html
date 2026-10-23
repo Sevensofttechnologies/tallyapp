@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Ops Console - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/widgets.css">
+    <link rel="stylesheet" href="css/utils/customizer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-header {
+            height: 64px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .sidebar-brand {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--primary-600);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-nav {
+            padding: 16px 0;
+            flex: 1;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            color: var(--gray-600);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--primary-50);
+            color: var(--primary-600);
+            border-right: 3px solid var(--primary-600);
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                display: none;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+
+        /* Queue Status Dots */
+        .status-pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-pulse.ok {
+            background: var(--success);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+
+        .status-pulse.warn {
+            background: var(--warning);
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <div class="text-xs font-bold text-muted uppercase px-6 mt-6 mb-2">Ops Tools</div>
+                <a href="email-console.html" class="sidebar-link active"><span class="sidebar-icon">📨</span> Email
+                    Console</a>
+                <a href="audit-logs.html" class="sidebar-link"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <div class="text-xs font-bold text-muted uppercase px-6 mt-6 mb-2">Management</div>
+                <a href="users.html" class="sidebar-link"><span class="sidebar-icon">👥</span> Users</a>
+                <div class="text-xs font-bold text-muted uppercase px-6 mt-6 mb-2">Settings</div>
+                <a href="organization.html" class="sidebar-link"><span class="sidebar-icon">🏢</span> Organization</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2 class="text-lg font-bold">Email Operations Console</h2>
+                <div class="flex gap-4 items-center">
+                    <div
+                        class="flex items-center text-sm font-medium text-success-700 bg-success-50 px-3 py-1 rounded-full border border-success-200">
+                        <span class="status-pulse ok"></span> RabbitMQ Connected
+                    </div>
+                    <button class="btn btn-sm btn-ghost relative" data-toggle="notifications">
+                        🔔 <span
+                            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger border border-white"></span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-6 max-w-7xl mx-auto w-full">
+
+                <!-- Queue Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="card p-4">
+                        <div class="text-muted text-xs font-bold uppercase tracking-wide">Pending Emails</div>
+                        <div class="text-3xl font-bold mt-2">12</div>
+                        <div class="text-xs text-muted mt-1">Queue: <span class="font-mono">email_default</span></div>
+                    </div>
+                    <div class="card p-4">
+                        <div class="text-muted text-xs font-bold uppercase tracking-wide">Processed (24h)</div>
+                        <div class="text-3xl font-bold mt-2 text-primary-600">1,450</div>
+                        <div class="text-xs text-success mt-1">↑ 12% from yesterday</div>
+                    </div>
+                    <div class="card p-4">
+                        <div class="text-muted text-xs font-bold uppercase tracking-wide">Failed (24h)</div>
+                        <div class="text-3xl font-bold mt-2 text-danger">3</div>
+                        <div class="text-xs text-muted mt-1">Retry Queue Active</div>
+                    </div>
+                    <div class="card p-4 border-l-4 border-warning">
+                        <div class="text-muted text-xs font-bold uppercase tracking-wide">Dead Letter Queue</div>
+                        <div class="text-3xl font-bold mt-2">0</div>
+                        <div class="text-xs text-muted mt-1">No manual action needed</div>
+                    </div>
+                </div>
+
+                <!-- Main Content: Recent Emails -->
+                <div class="card p-0">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="font-bold">Recent Deliveries</h3>
+                        <div class="flex gap-2">
+                            <button class="btn btn-xs btn-outline">Purge Failed</button>
+                            <button class="btn btn-xs btn-primary">Retry All</button>
+                        </div>
+                    </div>
+                    <table class="table w-full" data-component="datatable">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Template</th>
+                                <th>Recipient</th>
+                                <th>Subject</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-success">Sent</span></td>
+                                <td>welcome_v2</td>
+                                <td>john@example.com</td>
+                                <td>Welcome to VanillaNext!</td>
+                                <td class="text-sm">2 mins ago</td>
+                                <td><button class="btn btn-xs btn-ghost">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-success">Sent</span></td>
+                                <td>reset_password</td>
+                                <td>sarah@domain.com</td>
+                                <td>Reset your password</td>
+                                <td class="text-sm">15 mins ago</td>
+                                <td><button class="btn btn-xs btn-ghost">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-danger">Failed</span></td>
+                                <td>invoice_pdf</td>
+                                <td>billing@client.com</td>
+                                <td>Invoice #INV-2024-001</td>
+                                <td class="text-sm">1 hour ago</td>
+                                <td><button class="btn btn-xs btn-outline">Retry</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-warning">Retrying (2/5)</span></td>
+                                <td>invite_member</td>
+                                <td>new@startup.io</td>
+                                <td>You have been invited...</td>
+                                <td class="text-sm">5 mins ago</td>
+                                <td><button class="btn btn-xs btn-ghost">Log</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/DataTable.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+    <script src="js/components/NotificationCenter.js"></script>
+</body>
+
+</html>

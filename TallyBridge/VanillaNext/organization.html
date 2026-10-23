@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Settings - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/advanced-forms.css">
+    <link rel="stylesheet" href="css/utils/customizer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-header {
+            height: 64px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .sidebar-brand {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--primary-600);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-nav {
+            padding: 16px 0;
+            flex: 1;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            color: var(--gray-600);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: var(--primary-50);
+            color: var(--primary-600);
+            border-right: 3px solid var(--primary-600);
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                display: none;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <a href="file-manager.html" class="sidebar-link"><span class="sidebar-icon">📂</span> Files</a>
+                <a href="kanban.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Kanban</a>
+                <div class="text-xs font-bold text-muted uppercase px-6 mt-6 mb-2">Management</div>
+                <a href="users.html" class="sidebar-link"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="audit-logs.html" class="sidebar-link"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <div class="text-xs font-bold text-muted uppercase px-6 mt-6 mb-2">Settings</div>
+                <a href="organization.html" class="sidebar-link active"><span class="sidebar-icon">🏢</span>
+                    Organization</a>
+                <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="login.html" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2 class="text-lg font-bold">Organization Settings</h2>
+                <div class="flex gap-4 items-center">
+                    <button class="btn btn-sm btn-ghost relative" data-toggle="notifications">
+                        🔔 <span
+                            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger border border-white"></span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-6 max-w-4xl mx-auto w-full">
+
+                <div class="card p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Branding</h3>
+                    <div class="flex items-center gap-6 mb-6">
+                        <div
+                            class="w-24 h-24 bg-gray-100 rounded flex items-center justify-center border border-dashed border-gray-300">
+                            <span class="text-xs text-muted">Logo</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary btn-sm mb-2">Upload New Logo</button>
+                            <p class="text-xs text-muted">Recommended size: 120x40px. Max 2MB.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-input" value="Acme Inc">
+                        </div>
+                        <div>
+                            <label class="form-label">Subdomain</label>
+                            <div class="flex">
+                                <input type="text" class="form-input rounded-r-none" value="acme">
+                                <span
+                                    class="inline-flex items-center px-3 bg-gray-50 border border-l-0 border-gray-200 rounded-r text-gray-500 text-sm">.vanillanext.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Mailing Address</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="form-label">Address Line 1</label>
+                            <input type="text" class="form-input" value="123 Tech Park">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-input" value="Silicon Valley">
+                            </div>
+                            <div>
+                                <label class="form-label">Zip Code</label>
+                                <input type="text" class="form-input" value="94025">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Country</label>
+                            <select class="form-select">
+                                <option>United States</option>
+                                <option>India</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card p-6 border-danger-200 border">
+                    <h3 class="font-bold text-lg text-danger mb-2">Danger Zone</h3>
+                    <p class="text-sm text-muted mb-4">Deleting the organization is irreversible.</p>
+                    <button class="btn btn-danger-outline">Delete Organization</button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+    <script src="js/components/NotificationCenter.js"></script>
+</body>
+
+</html>

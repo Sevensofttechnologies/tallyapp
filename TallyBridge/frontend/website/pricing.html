@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - AppStarter</title>
+    <link rel="stylesheet" href="/frontend/website/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/frontend/website/" class="nav-logo">
+                <span class="logo-icon">🚀</span>
+                <span class="logo-text">App<span class="logo-highlight">Starter</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/frontend/website/" class="nav-link">Home</a></li>
+                <li><a href="/frontend/website/features.html" class="nav-link">Features</a></li>
+                <li><a href="/frontend/website/pricing.html" class="nav-link active">Pricing</a></li>
+                <li><a href="/frontend/website/about.html" class="nav-link">About</a></li>
+                <li><a href="/frontend/website/contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="/frontend/login.html" class="btn-login">Login</a>
+                <a href="/frontend/register.html" class="btn-signup">Get Started</a>
+            </div>
+            <button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1>Simple, Transparent Pricing</h1>
+        <p>Open source and free forever. Premium support available for enterprises.</p>
+        <div class="billing-toggle">
+            <span class="toggle-label">Monthly</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="billingToggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Yearly <span class="save-badge">Save 20%</span></span>
+        </div>
+    </section>
+
+    <!-- Pricing Cards -->
+    <section class="pricing-section">
+        <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <span class="plan-name">Community</span>
+                    <p class="plan-desc">For individual developers</p>
+                </div>
+                <div class="pricing-price">
+                    <span class="currency">$</span>
+                    <span class="price-amount">0</span>
+                    <span class="price-period">/forever</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Full source code access</li>
+                    <li>✓ All features included</li>
+                    <li>✓ MIT License</li>
+                    <li>✓ Community support</li>
+                    <li>✓ GitHub issues</li>
+                    <li class="disabled">✗ Priority support</li>
+                    <li class="disabled">✗ Custom development</li>
+                </ul>
+                <a href="/frontend/register.html" class="btn-pricing">Get Started Free</a>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card popular">
+                <span class="popular-badge">Most Popular</span>
+                <div class="pricing-header">
+                    <span class="plan-name">Pro</span>
+                    <p class="plan-desc">For growing teams</p>
+                </div>
+                <div class="pricing-price">
+                    <span class="currency">$</span>
+                    <span class="price-amount" data-monthly="49" data-yearly="39">49</span>
+                    <span class="price-period">/month</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Everything in Community</li>
+                    <li>✓ Priority email support</li>
+                    <li>✓ 1-hour response time</li>
+                    <li>✓ Video call support</li>
+                    <li>✓ Private Discord channel</li>
+                    <li>✓ Early access to features</li>
+                    <li class="disabled">✗ Custom development</li>
+                </ul>
+                <a href="/frontend/register.html" class="btn-pricing primary">Start Pro Trial</a>
+            </div>
+
+            <!-- Enterprise Plan -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <span class="plan-name">Enterprise</span>
+                    <p class="plan-desc">For large organizations</p>
+                </div>
+                <div class="pricing-price">
+                    <span class="price-amount">Custom</span>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Everything in Pro</li>
+                    <li>✓ Dedicated support engineer</li>
+                    <li>✓ Custom feature development</li>
+                    <li>✓ On-premise deployment</li>
+                    <li>✓ SLA guarantee</li>
+                    <li>✓ Security audit</li>
+                    <li>✓ Training sessions</li>
+                </ul>
+                <a href="/frontend/website/contact.html" class="btn-pricing">Contact Sales</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="comparison-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Compare Plans</h2>
+            </div>
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Community</th>
+                            <th>Pro</th>
+                            <th>Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Source Code Access</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>All Features</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Community Support</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Priority Support</td>
+                            <td>-</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Response Time</td>
+                            <td>Best effort</td>
+                            <td>1 hour</td>
+                            <td>15 min</td>
+                        </tr>
+                        <tr>
+                            <td>Video Calls</td>
+                            <td>-</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Custom Development</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>SLA</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>99.9%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Is AppStarter really free?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! AppStarter is completely free and open source under the MIT license. You can use it for personal and commercial projects without any cost.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>What's included in the Pro plan?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Pro plan includes priority email support, 1-hour response time, video call support, private Discord channel, and early access to new features.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Can I use AppStarter for commercial projects?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Absolutely! The MIT license allows you to use AppStarter for any purpose, including commercial applications, without attribution requirements.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Do you offer refunds?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, we offer a 30-day money-back guarantee for Pro and Enterprise plans. If you're not satisfied, contact us for a full refund.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Start Building Today</h2>
+            <p>Join thousands of developers building with AppStarter</p>
+            <div class="cta-buttons">
+                <a href="/frontend/register.html" class="btn-white btn-large">Get Started Free</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2024 AppStarter. Open Source under MIT License.</p>
+                <div class="footer-legal">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+
+        // Billing toggle
+        const billingToggle = document.getElementById('billingToggle');
+        billingToggle.addEventListener('change', () => {
+            const priceElements = document.querySelectorAll('[data-monthly]');
+            priceElements.forEach(el => {
+                el.textContent = billingToggle.checked ? el.dataset.yearly : el.dataset.monthly;
+            });
+        });
+
+        // FAQ toggle
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

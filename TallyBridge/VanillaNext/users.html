@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - VanillaNext</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/widgets.css">
+    <link rel="stylesheet" href="css/admin-layout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Document overrides */
+        .admin-main {
+            background: var(--bg-body);
+        }
+    </style>
+</head>
+
+<body class="bg-body">
+    <!-- PWA Banners -->
+    <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner-content">
+            <div class="install-banner-title">Install VanillaNext</div>
+            <div class="install-banner-text">Add to home screen for quick access</div>
+        </div>
+        <div class="install-banner-actions">
+            <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+            <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">⚡ VanillaNext</div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+                <a href="file-manager.html" class="sidebar-link"><span class="sidebar-icon">📂</span> Files</a>
+                <a href="kanban.html" class="sidebar-link"><span class="sidebar-icon">📅</span> Kanban</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+                <a href="users.html" class="sidebar-link active"><span class="sidebar-icon">👥</span> Users</a>
+                <a href="audit-logs.html" class="sidebar-link"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+                <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+                <a href="organization.html" class="sidebar-link"><span class="sidebar-icon">🏢</span> Organization</a>
+                <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+                <a href="login.html" class="sidebar-link text-danger"><span class="sidebar-icon">🚪</span> Logout</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h2 class="text-lg font-bold">User Management</h2>
+                <div class="flex gap-4 items-center">
+                    <button class="btn btn-sm btn-ghost relative" data-toggle="notifications">
+                        🔔 <span
+                            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger border border-white"></span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="Modal.open('user-modal')">+ Add User</button>
+                </div>
+            </header>
+
+            <div class="p-4 w-full">
+                <div class="card p-0">
+                    <table class="table w-full" data-component="datatable">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Phone</th>
+                                <th>Last Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=2563eb&color=fff"
+                                            class="w-8 h-8 rounded-full">
+                                        <div>
+                                            <div class="font-bold text-sm">John Doe</div>
+                                            <div class="text-xs text-muted">john@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-primary">Admin</span></td>
+                                <td><span class="badge badge-success badge-dot">Active</span></td>
+                                <td class="text-sm">+1 123 456 7890</td>
+                                <td class="text-sm text-muted">2 mins ago</td>
+                                <td>
+                                    <button class="btn btn-sm btn-ghost">✏️</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=db2777&color=fff"
+                                            class="w-8 h-8 rounded-full">
+                                        <div>
+                                            <div class="font-bold text-sm">Sarah Smith</div>
+                                            <div class="text-xs text-muted">sarah@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-secondary">Member</span></td>
+                                <td><span class="badge badge-success badge-dot">Active</span></td>
+                                <td class="text-sm">+44 20 7123 4567</td>
+                                <td class="text-sm text-muted">1 day ago</td>
+                                <td>
+                                    <button class="btn btn-sm btn-ghost">✏️</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=Mike+Ross&background=059669&color=fff"
+                                            class="w-8 h-8 rounded-full">
+                                        <div>
+                                            <div class="font-bold text-sm">Mike Ross</div>
+                                            <div class="text-xs text-muted">mike@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-secondary">Member</span></td>
+                                <td><span class="badge badge-warning badge-dot">Inactive</span></td>
+                                <td class="text-sm">-</td>
+                                <td class="text-sm text-muted">Never</td>
+                                <td>
+                                    <button class="btn btn-sm btn-ghost">✏️</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Add New User</h3>
+                    <button class="btn-close" onclick="Modal.close('user-modal')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" placeholder="John">
+                            </div>
+                            <div>
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" placeholder="Doe">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" placeholder="john@company.com">
+                        </div>
+                        <div>
+                            <label class="form-label">Role</label>
+                            <select class="form-select">
+                                <option value="user">Member</option>
+                                <option value="admin">Admin</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="Modal.close('user-modal')">Cancel</button>
+                    <button class="btn btn-primary">Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/components/Modal.js"></script>
+    <script src="js/components/DataTable.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/ThemeCustomizer.js"></script>
+    <script src="js/components/NotificationCenter.js"></script>
+    <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

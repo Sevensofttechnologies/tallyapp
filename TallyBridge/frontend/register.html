@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.json">
+  <title>Register - Application Starter Kit</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+  <style>
+    .password-strength {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 8px;
+      transition: all 0.3s;
+    }
+
+    .password-strength.weak {
+      background: var(--danger);
+      width: 33%;
+    }
+
+    .password-strength.medium {
+      background: var(--warning);
+      width: 66%;
+    }
+
+    .password-strength.strong {
+      background: var(--success);
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>🚀 App Starter Kit</h1>
+        <p>Create your account</p>
+      </div>
+
+      <form id="register-form">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          <input type="text" id="first-name" class="form-input" placeholder="John" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Last Name *</label>
+          <input type="text" id="last-name" class="form-input" placeholder="Doe" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+          <span class="form-error" id="email-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <input type="password" id="password" class="form-input" placeholder="Min 8 characters" required minlength="8"
+            oninput="checkPasswordStrength()">
+          <div class="password-strength" id="password-strength"></div>
+          <span class="form-hint" id="password-hint">Use 8+ characters with uppercase, lowercase, number & symbol</span>
+          <span class="form-error" id="password-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          <input type="password" id="confirm-password" class="form-input" placeholder="Confirm password" required>
+          <span class="form-error" id="confirm-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" id="terms" required> I agree to the Terms & Conditions
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;" id="register-btn">
+          Create Account
+        </button>
+
+        <div id="register-error" class="form-error" style="text-align: center; margin-top: 16px;"></div>
+      </form>
+
+      <div class="auth-footer">
+        <p style="margin: 0;">Already have an account? <a href="login.html">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script>
+    function checkPasswordStrength() {
+      const password = document.getElementById('password').value;
+      const strengthBar = document.getElementById('password-strength');
+      const validation = Utils.validatePassword(password);
+
+      strengthBar.className = 'password-strength';
+      if (password.length === 0) {
+        strengthBar.style.width = '0';
+      } else if (validation.errors.length >= 3) {
+        strengthBar.classList.add('weak');
+      } else if (validation.errors.length >= 1) {
+        strengthBar.classList.add('medium');
+      } else {
+        strengthBar.classList.add('strong');
+      }
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const firstName = document.getElementById('first-name').value.trim();
+      const lastName = document.getElementById('last-name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const registerBtn = document.getElementById('register-btn');
+
+      document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+
+      if (!Utils.validateEmail(email)) {
+        document.getElementById('email-error').textContent = 'Please enter a valid email';
+        return;
+      }
+
+      const passwordValidation = Utils.validatePassword(password);
+      if (!passwordValidation.valid) {
+        document.getElementById('password-error').textContent = 'Missing: ' + passwordValidation.errors.join(', ');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        document.getElementById('confirm-error').textContent = 'Passwords do not match';
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.innerHTML = '<span class="spinner spinner-sm"></span> Creating account...';
+
+      try {
+        const response = await API.auth.register({
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          password: password
+        });
+
+        if (response.success) {
+          Toast.success('Account created! Redirecting to login...');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+        } else {
+          throw { message: response.message || 'Registration failed' };
+        }
+      } catch (error) {
+        document.getElementById('register-error').textContent = error.detail || error.message || 'Registration failed';
+        Toast.error('Registration failed');
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = 'Create Account';
+      }
+    });
+  </script>
+  <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

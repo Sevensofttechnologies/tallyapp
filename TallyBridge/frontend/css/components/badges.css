@@ -1,0 +1,54 @@
+/* ==========================================================================
+   BADGES
+   ========================================================================== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    border-radius: var(--radius-full);
+    transition: all 0.2s;
+}
+
+/* Primary */
+.badge-primary {
+    background-color: var(--primary-100);
+    color: var(--primary-700);
+}
+
+/* Success */
+.badge-success {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+/* Warning */
+.badge-warning {
+    background-color: var(--warning-light);
+    color: #b45309;
+}
+
+/* Danger */
+.badge-danger {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+/* Neutral */
+.badge-neutral {
+    background-color: var(--gray-100);
+    color: var(--gray-600);
+}
+
+/* Dot Indicator */
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 4px;
+    background-color: currentColor;
+}

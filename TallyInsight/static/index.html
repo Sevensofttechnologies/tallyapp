@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TallyInsight — Tally ERP Business Intelligence</title>
+  <meta name="theme-color" content="#1a3c6e" />
+  <meta name="description" content="TallyInsight — Sync, analyse and explore your Tally ERP data with ease." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="TallyInsight" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="icon" type="image/png" href="/static/assets/branding/favicon.png" />
+  <link rel="stylesheet" href="/static/css/tally-theme.css?v=2" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => { regs.forEach(reg => reg.update()); });
+      caches.keys().then(keys => { keys.filter(k => k.includes('v1')).forEach(k => caches.delete(k)); });
+    }
+  </script>
+  <style>
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--tally-navy) 0%, #0f2548 100%);
+      color: #fff;
+      padding: 64px 24px 56px;
+      text-align: center;
+    }
+    .hero-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .hero-logo-icon {
+      width: 56px; height: 56px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0 0 12px;
+    }
+    .hero h1 span { color: var(--tally-orange); }
+    .hero p {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.75);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.65;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--tally-orange);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 28px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .hero-btn-primary:hover { background: #d96a10; transform: translateY(-1px); }
+    .hero-btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 28px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      transition: background var(--transition);
+    }
+    .hero-btn-outline:hover { background: rgba(255,255,255,0.18); }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-bar-left { display: flex; align-items: center; gap: 16px; }
+    .status-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
+
+    /* ── Feature cards ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+      text-decoration: none;
+      display: block;
+    }
+    .feature-card:hover {
+      border-color: var(--tally-navy);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      font-size: 1.1rem;
+    }
+    .feature-icon.navy { background: rgba(26,60,110,0.1); color: var(--tally-navy); }
+    .feature-icon.orange { background: rgba(244,121,32,0.1); color: var(--tally-orange); }
+    .feature-icon.green { background: rgba(16,185,129,0.1); color: #10b981; }
+    .feature-icon.purple { background: rgba(99,102,241,0.1); color: #6366f1; }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 6px; }
+    .feature-card p  { font-size: 0.83rem; color: var(--text-muted); line-height: 1.55; margin: 0; }
+
+    /* ── Synced companies ── */
+    .company-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      background: var(--surface);
+      text-decoration: none;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .company-row:hover { background: var(--gray-50); border-color: var(--tally-navy); }
+    .company-row:last-child { margin-bottom: 0; }
+    .company-row-left { display: flex; align-items: center; gap: 12px; }
+    .company-avatar {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--tally-navy), #2a5298);
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .company-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+    .company-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
+    .company-row-right { display: flex; align-items: center; gap: 8px; }
+
+    /* ── Quick stats ── */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) { .quick-stats { grid-template-columns: 1fr; } }
+    .qs-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+    }
+    .qs-value { font-size: 1.6rem; font-weight: 800; color: var(--tally-navy); }
+    .qs-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="t-navbar">
+  <a href="/" class="t-navbar-brand">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="#1a3c6e"/>
+      <path d="M8 10h16M8 16h10M8 22h13" stroke="#f47920" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span>TallyInsight</span>
+  </a>
+  <div class="t-navbar-nav">
+    <a href="/sync.html" class="t-nav-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync
+    </a>
+    <a href="/audit.html" class="t-nav-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Audit
+    </a>
+  </div>
+  <div class="t-navbar-end">
+    <span class="t-status-dot" id="statusDot"></span>
+    <span class="t-status-text" id="statusText">Checking…</span>
+  </div>
+</nav>
+
+<!-- Toast container -->
+<div id="toastContainer" class="t-toast-container"></div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-logo">
+    <div class="hero-logo-icon">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <path d="M6 8h20M6 16h14M6 24h16" stroke="#f47920" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span style="font-size:1.5rem; font-weight:800; letter-spacing:-0.5px;">TallyInsight</span>
+  </div>
+  <h1>Tally ERP <span>Business Intelligence</span></h1>
+  <p>Sync your Tally data to a local database and explore it with powerful analytics, audit trails, and real-time dashboards.</p>
+  <div class="hero-actions">
+    <a href="/sync.html" class="hero-btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync Data
+    </a>
+    <a href="/audit.html" class="hero-btn-outline">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Audit Trail
+    </a>
+  </div>
+</section>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div class="status-bar-left">
+    <div class="status-item">
+      <span class="t-status-dot" id="tallyDot"></span>
+      <span id="tallyStatusText">Tally: Checking…</span>
+    </div>
+    <div class="status-item">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span id="dbStatusText">Database: Ready</span>
+    </div>
+  </div>
+  <div style="font-size:0.78rem; color:var(--text-muted);" id="lastSyncText">Last sync: —</div>
+</div>
+
+<!-- Main content -->
+<main class="t-container" style="padding-top:32px; padding-bottom:48px;">
+
+  <!-- Quick stats -->
+  <div class="quick-stats">
+    <div class="qs-card">
+      <div class="qs-value" id="qsRecords">—</div>
+      <div class="qs-label">Total Records</div>
+    </div>
+    <div class="qs-card">
+      <div class="qs-value" id="qsCompanies">—</div>
+      <div class="qs-label">Companies Synced</div>
+    </div>
+    <div class="qs-card">
+      <div class="qs-value">32</div>
+      <div class="qs-label">Data Tables</div>
+    </div>
+  </div>
+
+  <!-- Feature cards -->
+  <div class="features-grid">
+    <a href="/sync.html" class="feature-card">
+      <div class="feature-icon navy">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </div>
+      <h3>Sync Settings</h3>
+      <p>Configure Tally connection, add companies, set sync schedules and monitor sync progress in real time.</p>
+    </a>
+    <a href="/audit.html" class="feature-card">
+      <div class="feature-icon orange">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Audit Trail</h3>
+      <p>Track every data change with full audit history, session logs, deleted record recovery and detailed stats.</p>
+    </a>
+    <div class="feature-card" style="cursor:default;">
+      <div class="feature-icon green">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <h3>Analytics <span class="t-badge" style="font-size:0.65rem; padding:2px 6px; margin-left:4px;">Soon</span></h3>
+      <p>Visualise ledger balances, stock movements, voucher trends and GST summaries with interactive charts.</p>
+    </div>
+    <div class="feature-card" style="cursor:default;">
+      <div class="feature-icon purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <h3>Data Explorer <span class="t-badge" style="font-size:0.65rem; padding:2px 6px; margin-left:4px;">Soon</span></h3>
+      <p>Query any Tally table directly, export to Excel/CSV and build custom reports without writing SQL.</p>
+    </div>
+  </div>
+
+  <!-- Synced companies -->
+  <div class="t-card">
+    <div class="t-card-header" style="display:flex; align-items:center; justify-content:space-between;">
+      <h2 class="t-card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Synced Companies
+      </h2>
+      <a href="/sync.html" class="t-btn t-btn-ghost t-btn-sm">Manage →</a>
+    </div>
+    <div class="t-card-body" id="companiesList">
+      <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">Loading companies…</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  function fmt(n) {
+    if (n === undefined || n === null) return '—';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
+    return n.toLocaleString();
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 60000);
+      if (diff < 1)    return 'Just now';
+      if (diff < 60)   return diff + 'm ago';
+      if (diff < 1440) return Math.floor(diff / 60) + 'h ago';
+      return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+    } catch { return '—'; }
+  }
+
+  function initials(name) {
+    return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  }
+
+  async function checkHealth() {
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      const dot  = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      const tdot = document.getElementById('tallyDot');
+      const ttext = document.getElementById('tallyStatusText');
+      if (d.components && d.components.tally && d.components.tally.status === 'healthy') {
+        dot.className = 't-status-dot connected';
+        text.textContent = 'Tally: Connected';
+        tdot.className = 't-status-dot connected';
+        ttext.textContent = 'Tally: Connected';
+      } else {
+        dot.className = 't-status-dot disconnected';
+        text.textContent = 'Tally: Disconnected';
+        tdot.className = 't-status-dot disconnected';
+        ttext.textContent = 'Tally: Disconnected';
+      }
+    } catch {
+      document.getElementById('statusText').textContent = 'Offline';
+    }
+  }
+
+  async function loadHome() {
+    // Quick stats
+    try {
+      const r = await fetch('/api/data/counts');
+      if (r.ok) {
+        const stats = await r.json();
+        let total = 0;
+        Object.values(stats).forEach(v => { if (typeof v === 'number') total += v; });
+        document.getElementById('qsRecords').textContent = fmt(total);
+      }
+    } catch { /* ignore */ }
+
+    // Companies
+    try {
+      const r = await fetch('/api/data/synced-companies');
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      const companies = d.companies || [];
+      document.getElementById('qsCompanies').textContent = companies.length || d.count || 0;
+
+      const list = document.getElementById('companiesList');
+      if (!companies.length) {
+        list.innerHTML = `<div style="text-align:center; padding:32px; color:var(--text-muted);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35; display:block; margin:0 auto 10px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          No companies synced yet. <a href="/sync.html" style="color:var(--tally-navy); font-weight:600;">Add one →</a>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = companies.map(c => `
+        <a href="/dashboard.html?company=${encodeURIComponent(c.company_name)}" class="company-row">
+          <div class="company-row-left">
+            <div class="company-avatar">${initials(c.company_name)}</div>
+            <div>
+              <div class="company-name">${c.company_name}</div>
+              <div class="company-meta">Last sync: ${fmtTime(c.last_sync_at)}</div>
+            </div>
+          </div>
+          <div class="company-row-right">
+            <span class="t-badge t-badge-success" style="font-size:0.72rem;">Synced</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </a>
+      `).join('');
+
+      // Last sync
+      const latest = companies.reduce((a, b) =>
+        (a.last_sync_at || '') > (b.last_sync_at || '') ? a : b, companies[0]);
+      document.getElementById('lastSyncText').textContent = 'Last sync: ' + fmtTime(latest?.last_sync_at);
+
+    } catch {
+      document.getElementById('companiesList').innerHTML =
+        '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">Could not load companies.</div>';
+    }
+  }
+
+  (function init() {
+    loadHome();
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  })();
+</script>
+</body>
+</html>

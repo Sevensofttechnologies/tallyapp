@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="auth-layout">
+        <!-- Left Side (Banner) -->
+        <div class="auth-sidebar">
+            <h1 class="text-4xl font-bold mb-4">Welcome Back!</h1>
+            <p class="text-lg opacity-90">Access your dashboard to manage orders, analyze data, and stay connected with
+                your team.</p>
+        </div>
+
+        <!-- Right Side (Form) -->
+        <div class="auth-content">
+            <div class="auth-card">
+                <a href="index.html" class="auth-brand">⚡ VanillaNext</a>
+
+                <h2 class="auth-title">Sign In</h2>
+                <p class="auth-subtitle">Enter your email and password to continue.</p>
+
+                <form>
+                    <div class="mb-4">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" placeholder="name@company.com">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label flex justify-between">
+                            <span>Password</span>
+                            <a href="forgot-password.html" class="text-primary-600 text-sm hover:underline">Forgot
+                                password?</a>
+                        </label>
+                        <input type="password" class="form-input" placeholder="••••••••">
+                    </div>
+
+                    <div class="form-check mb-6">
+                        <input type="checkbox" class="form-check-input" id="remember">
+                        <label class="form-check-label" for="remember">Keep me logged in</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-full btn-lg mb-6">Sign In</button>
+
+                    <div class="divider">OR CONTINUE WITH</div>
+
+                    <div class="social-login">
+                        <button type="button" class="btn btn-secondary w-full">Google</button>
+                        <button type="button" class="btn btn-secondary w-full">Github</button>
+                    </div>
+
+                    <p class="text-center text-sm text-gray-600">
+                        Don't have an account?
+                        <a href="register.html" class="text-primary-600 font-bold hover:underline">Create Account</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/core/ThemeManager.js"></script>
+</body>
+
+</html>

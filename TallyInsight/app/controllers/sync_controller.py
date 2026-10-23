@@ -1,0 +1,187 @@
+"""
+Sync Controller
+===============
+API endpoints for data synchronization operations.
+
+ENDPOINTS:
+---------
+POST /api/sync/full          - Start full sync (replaces all data)
+POST /api/sync/incremental   - Start incremental sync (only changes)
+GET  /api/sync/status        - Get current sync status
+POST /api/sync/cancel        - Cancel running sync
+GET  /api/sync/history       - Get sync history
+
+QUEUE ENDPOINTS (Multi-Company):
+-------------------------------
+POST   /api/sync/queue        - Add companies to queue
+POST   /api/sync/queue/start  - Start processing queue
+GET    /api/sync/queue/status - Get queue status
+DELETE /api/sync/queue        - Clear queue
+
+USAGE:
+-----
+1. Single Company Sync:
+   POST /api/sync/full?company=CompanyName
+
+2. Multi-Company Sync:
+   POST /api/sync/queue
+   Body: {"companies": ["Company1", "Company2"], "sync_type": "full"}
+   POST /api/sync/queue/start
+
+BACKGROUND TASKS:
+----------------
+Sync operations run in background (BackgroundTasks).
+Use /api/sync/status to monitor progress.
+"""
+
+from fastapi import APIRouter, BackgroundTasks
+from typing import Optional, List
+from pydantic import BaseModel
+
+from ..services.sync_service import sync_service
+from ..services.sync_queue_service import sync_queue_service
+from ..services.tally_service import tally_service
+from ..utils.logger import logger
+
+router = APIRouter()
+
+
+class QueueRequest(BaseModel):
+    companies: List[str]
+    sync_type: str = "full"
+
+
+@router.post("/full")
+async def trigger_full_sync(
+    background_tasks: BackgroundTasks, 
+    company: str = "", 
+    parallel: bool = False,
+    from_date: str = "",
+    to_date: str = ""
+):
+    """Trigger full data synchronization
+    
+    Args:
+        company: Company name to sync (empty = active company in Tally)
+        parallel: If True, fetch all tables simultaneously (3-5x faster)
+        from_date: Start date for sync (YYYY-MM-DD). If empty, auto-detect from Tally.
+        to_date: End date for sync (YYYY-MM-DD). If empty, use current financial year end.
+    """
+    mode = "parallel" if parallel else "sequential"
+    period_info = f", period={from_date} to {to_date}" if from_date or to_date else " (auto-detect period)"
+    logger.info(f"Full sync requested for company: {company or 'Default'} (mode={mode}){period_info}")
+    background_tasks.add_task(sync_service.full_sync, company, parallel, from_date, to_date)
+    return {
+        "status": "started",
+        "message": f"Full sync started for {company or 'Default'} (mode={mode})"
+    }
+
+
+@router.post("/incremental")
+async def trigger_incremental_sync(
+    background_tasks: BackgroundTasks, 
+    company: str = "",
+    from_date: str = "",
+    to_date: str = ""
+):
+    """Trigger incremental data synchronization (only changed records)
+    
+    Args:
+        company: Company name to sync
+        from_date: Start date (YYYY-MM-DD). If empty, uses stored period.
+        to_date: End date (YYYY-MM-DD). If empty, uses stored period.
+    """
+    period_info = ""
+    if from_date and to_date:
+        period_info = f" (Period: {from_date} to {to_date})"
+    elif from_date or to_date:
+        period_info = f" (Partial period: from={from_date}, to={to_date})"
+    else:
+        period_info = " (Using stored period)"
+    
+    logger.info(f"Incremental sync requested for company: {company or 'Default'}{period_info}")
+    background_tasks.add_task(sync_service.incremental_sync, company, from_date, to_date)
+    return {
+        "status": "started",
+        "message": f"Incremental sync started for {company or 'Default'}{period_info}"
+    }
+
+
+@router.get("/status")
+async def get_sync_status():
+    """Get current sync status"""
+    return sync_service.get_status()
+
+
+@router.post("/cancel")
+async def cancel_sync():
+    """Cancel running sync"""
+    if sync_service.cancel():
+        return {"status": "cancelled", "message": "Sync cancellation requested"}
+    return {"status": "not_running", "message": "No sync is currently running"}
+
+
+@router.get("/history")
+async def get_sync_history(limit: int = 50):
+    """Get sync history records"""
+    history = await sync_service.get_sync_history(limit)
+    return {"history": history, "count": len(history)}
+
+
+# Queue endpoints for multi-company sync
+@router.post("/queue")
+async def add_to_queue(request: QueueRequest):
+    """Add multiple companies to sync queue"""
+    return sync_queue_service.add_companies(request.companies, request.sync_type)
+
+
+@router.post("/queue/start")
+async def start_queue():
+    """Start processing the sync queue"""
+    return await sync_queue_service.start_processing()
+
+
+@router.get("/queue/status")
+async def get_queue_status():
+    """Get current queue status"""
+    return sync_queue_service.get_status()
+
+
+@router.post("/queue/cancel")
+async def cancel_queue():
+    """Cancel queue processing"""
+    return sync_queue_service.cancel_queue()
+
+
+@router.post("/queue/clear")
+async def clear_queue():
+    """Clear the sync queue"""
+    return sync_queue_service.clear_queue()
+
+
+@router.get("/company/details")
+async def get_company_details(company: str = ""):
+    """Get complete company details from Tally
+    
+    Args:
+        company: Company name (empty = active company in Tally)
+    
+    Returns:
+        Complete company details including contact, address, statutory info
+    """
+    logger.info(f"Company details requested for: {company or 'Default'}")
+    return await tally_service.get_company_details(company)
+
+
+@router.get("/ledger/master")
+async def get_ledger_master(company: str = ""):
+    """Get all ledger master data from Tally with 30 fields
+    
+    Args:
+        company: Company name (empty = active company in Tally)
+    
+    Returns:
+        All ledgers with basic, balance, contact, statutory, bank, settings info
+    """
+    logger.info(f"Ledger master requested for: {company or 'Default'}")
+    return await tally_service.get_ledger_master(company)

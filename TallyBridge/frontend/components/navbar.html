@@ -1,0 +1,132 @@
+<!-- Navbar Component - SPA Navigation -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <a href="#" class="navbar-brand" onclick="loadPage('dashboard'); return false;">
+      <span class="brand-icon">🚀</span>
+      <span class="brand-text">AppStarter</span>
+    </a>
+
+    <!-- Main Navigation -->
+    <div class="navbar-nav">
+      <a href="#" class="nav-link" data-section="dashboard">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-link" data-section="users">
+        <span class="nav-icon">👥</span>
+        <span>Users</span>
+      </a>
+      <a href="#" class="nav-link" data-section="companies">
+        <span class="nav-icon">🏢</span>
+        <span>Companies</span>
+      </a>
+      <a href="#" class="nav-link" data-section="permissions">
+        <span class="nav-icon">🔐</span>
+        <span>Permissions</span>
+      </a>
+      <a href="#" class="nav-link" data-section="charts">
+        <span class="nav-icon">📈</span>
+        <span>Charts</span>
+      </a>
+      <a href="#" class="nav-link" data-section="audit">
+        <span class="nav-icon">📋</span>
+        <span>Audit</span>
+      </a>
+      <a href="#" class="nav-link" data-section="components">
+        <span class="nav-icon">🎨</span>
+        <span>Components</span>
+      </a>
+    </div>
+
+    <!-- Right Side -->
+    <div class="navbar-right">
+      <!-- Company Dropdown -->
+      <div class="dropdown" id="company-dropdown">
+        <button class="btn btn-ghost dropdown-toggle">
+          <span class="nav-icon">🏢</span>
+          <span id="active-company">Select Company</span>
+        </button>
+        <div class="dropdown-menu" id="company-list">
+          <!-- Companies loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- User Menu -->
+      <div class="dropdown">
+        <button class="btn btn-ghost dropdown-toggle" id="userMenuBtn">
+          <span class="avatar avatar-sm">👤</span>
+          <span id="user-name">User</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a href="#" class="dropdown-item" onclick="loadPage('profile'); return false;">
+            <span>👤</span> Profile
+          </a>
+          <a href="#" class="dropdown-item" onclick="loadPage('settings'); return false;">
+            <span>⚙️</span> Settings
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item text-danger" id="logoutBtn" onclick="handleLogout(); return false;">
+            <span>🚪</span> Logout
+          </a>
+        </div>
+      </div>
+
+      <!-- Mobile Toggle -->
+      <button class="btn btn-ghost mobile-toggle" id="mobileMenuToggle" onclick="toggleSidebar()">
+        <span>☰</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Sidebar Overlay -->
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- Mobile Sidebar -->
+<aside class="sidebar mobile-sidebar">
+  <div class="sidebar-header">
+    <span class="brand-icon">🚀</span>
+    <span class="brand-text">AppStarter</span>
+    <button class="btn btn-ghost" onclick="closeSidebar()">✕</button>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" class="sidebar-link" data-section="dashboard" onclick="closeSidebar()">
+      <span>📊</span> Dashboard
+    </a>
+    <a href="#" class="sidebar-link" data-section="users" onclick="closeSidebar()">
+      <span>👥</span> Users
+    </a>
+    <a href="#" class="sidebar-link" data-section="companies" onclick="closeSidebar()">
+      <span>🏢</span> Companies
+    </a>
+    <a href="#" class="sidebar-link" data-section="permissions" onclick="closeSidebar()">
+      <span>🔐</span> Permissions
+    </a>
+    <a href="#" class="sidebar-link" data-section="charts" onclick="closeSidebar()">
+      <span>📈</span> Charts
+    </a>
+    <a href="#" class="sidebar-link" data-section="audit" onclick="closeSidebar()">
+      <span>📋</span> Audit
+    </a>
+    <a href="#" class="sidebar-link" data-section="components" onclick="closeSidebar()">
+      <span>🎨</span> Components
+    </a>
+    <div class="sidebar-divider"></div>
+    <a href="#" class="sidebar-link" data-section="profile" onclick="closeSidebar()">
+      <span>👤</span> Profile
+    </a>
+    <a href="#" class="sidebar-link text-danger" onclick="handleLogout()">
+      <span>🚪</span> Logout
+    </a>
+  </nav>
+</aside>
+
+<script>
+  // Update user name
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = document.getElementById('user-name');
+  if (userName && user.first_name) {
+    userName.textContent = user.first_name;
+  }
+</script>

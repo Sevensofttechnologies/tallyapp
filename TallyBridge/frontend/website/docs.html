@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - AppStarter Framework</title>
+    <link rel="stylesheet" href="/frontend/website/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .docs-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 70px);
+        }
+
+        .docs-sidebar {
+            background: var(--gray-50);
+            padding: 30px 20px;
+            border-right: 1px solid var(--gray-200);
+            position: sticky;
+            top: 70px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+        }
+
+        .docs-sidebar h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-500);
+            margin: 20px 0 10px;
+        }
+
+        .docs-sidebar h4:first-child {
+            margin-top: 0;
+        }
+
+        .docs-nav a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .docs-nav a:hover,
+        .docs-nav a.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .docs-content {
+            padding: 40px 60px;
+            max-width: 900px;
+        }
+
+        .docs-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            color: var(--gray-900);
+        }
+
+        .docs-content h2 {
+            font-size: 1.5rem;
+            margin: 40px 0 16px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-200);
+            color: var(--gray-900);
+        }
+
+        .docs-content h3 {
+            font-size: 1.2rem;
+            margin: 24px 0 12px;
+            color: var(--gray-800);
+        }
+
+        .docs-content p {
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .code-block {
+            background: var(--gray-900);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-block .comment {
+            color: #6b7280;
+        }
+
+        .code-block .tag {
+            color: #f472b6;
+        }
+
+        .code-block .attr {
+            color: #a78bfa;
+        }
+
+        .code-block .string {
+            color: #34d399;
+        }
+
+        .code-block .keyword {
+            color: #60a5fa;
+        }
+
+        .inline-code {
+            background: var(--gray-100);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+
+        .demo-box {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 16px 0;
+        }
+
+        .demo-box h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .docs-container {
+                grid-template-columns: 1fr;
+            }
+
+            .docs-sidebar {
+                display: none;
+            }
+
+            .docs-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/frontend/website/" class="nav-logo">
+                <span class="logo-icon">🚀</span>
+                <span class="logo-text">App<span class="logo-highlight">Starter</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/frontend/website/" class="nav-link">Home</a></li>
+                <li><a href="/frontend/website/features.html" class="nav-link">Features</a></li>
+                <li><a href="/frontend/website/docs.html" class="nav-link active">Docs</a></li>
+                <li><a href="/docs" class="nav-link" target="_blank">API Docs</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="/frontend/login.html" class="btn-login">Login</a>
+                <a href="/frontend/register.html" class="btn-signup">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="docs-container">
+        <!-- Sidebar -->
+        <aside class="docs-sidebar">
+            <h4>Getting Started</h4>
+            <nav class="docs-nav">
+                <a href="#installation" class="active">Installation</a>
+                <a href="#project-structure">Project Structure</a>
+                <a href="#configuration">Configuration</a>
+            </nav>
+            <h4>UI Components</h4>
+            <nav class="docs-nav">
+                <a href="#buttons">Buttons</a>
+                <a href="#forms">Forms</a>
+                <a href="#cards">Cards</a>
+                <a href="#badges">Badges</a>
+                <a href="#alerts">Alerts</a>
+                <a href="#modals">Modals</a>
+                <a href="#tables">Tables</a>
+                <a href="#toasts">Toast Notifications</a>
+            </nav>
+            <h4>Charts</h4>
+            <nav class="docs-nav">
+                <a href="#chartjs">Chart.js Integration</a>
+                <a href="#chart-examples">Chart Examples</a>
+            </nav>
+            <h4>Authentication</h4>
+            <nav class="docs-nav">
+                <a href="#auth-api">Auth API</a>
+                <a href="#rbac">Role-Based Access</a>
+            </nav>
+        </aside>
+
+        <!-- Content -->
+        <main class="docs-content">
+            <h1>📚 AppStarter Documentation</h1>
+            <p>Welcome to the AppStarter Framework documentation. This guide will help you understand how to use the UI
+                components and build your application.</p>
+
+            <h2 id="installation">Installation</h2>
+            <p>Clone the repository and install dependencies:</p>
+            <div class="code-block">
+                <span class="comment"># Clone the repository</span>
+                git clone https://github.com/your-repo/application-starter-kit.git
+                cd application-starter-kit
+
+                <span class="comment"># Create virtual environment</span>
+                python -m venv venv
+                source venv/bin/activate <span class="comment"># On Windows: venv\Scripts\activate</span>
+
+                <span class="comment"># Install dependencies</span>
+                pip install -r requirements.txt
+
+                <span class="comment"># Run the application</span>
+                uvicorn app.main:app --reload --port 8501
+            </div>
+
+            <h2 id="project-structure">Project Structure</h2>
+            <div class="code-block">
+                ApplicationStarterKit/
+                ├── app/ <span class="comment"># Backend (FastAPI)</span>
+                │ ├── routes/ <span class="comment"># API endpoints</span>
+                │ ├── models/ <span class="comment"># Database models</span>
+                │ ├── middleware/ <span class="comment"># Custom middleware</span>
+                │ └── utils/ <span class="comment"># Utilities</span>
+                ├── frontend/ <span class="comment"># Frontend files</span>
+                │ ├── css/ <span class="comment"># Stylesheets</span>
+                │ ├── js/ <span class="comment"># JavaScript</span>
+                │ ├── pages/ <span class="comment"># SPA page fragments</span>
+                │ ├── components/ <span class="comment"># Reusable components</span>
+                │ └── website/ <span class="comment"># Landing pages</span>
+                └── requirements.txt
+            </div>
+
+            <h2 id="buttons">Buttons</h2>
+            <p>Use the <span class="inline-code">btn</span> class with variants for different button styles:</p>
+
+            <div class="demo-box">
+                <h4>Preview</h4>
+                <button class="btn btn-primary">Primary</button>
+                <button class="btn btn-secondary">Secondary</button>
+                <button class="btn btn-success">Success</button>
+                <button class="btn btn-warning">Warning</button>
+                <button class="btn btn-danger">Danger</button>
+            </div>
+
+            <div class="code-block">
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn
+                    btn-primary"</span><span class="tag">&gt;</span>Primary<span class="tag">&lt;/button&gt;</span>
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn
+                    btn-secondary"</span><span class="tag">&gt;</span>Secondary<span class="tag">&lt;/button&gt;</span>
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn
+                    btn-success"</span><span class="tag">&gt;</span>Success<span class="tag">&lt;/button&gt;</span>
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn
+                    btn-warning"</span><span class="tag">&gt;</span>Warning<span class="tag">&lt;/button&gt;</span>
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn
+                    btn-danger"</span><span class="tag">&gt;</span>Danger<span class="tag">&lt;/button&gt;</span>
+            </div>
+
+            <h3>Button Sizes</h3>
+            <div class="demo-box">
+                <h4>Preview</h4>
+                <button class="btn btn-sm btn-primary">Small</button>
+                <button class="btn btn-primary">Default</button>
+                <button class="btn btn-lg btn-primary">Large</button>
+            </div>
+            <div class="code-block">
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn btn-sm
+                    btn-primary"</span><span class="tag">&gt;</span>Small<span class="tag">&lt;/button&gt;</span>
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn
+                    btn-primary"</span><span class="tag">&gt;</span>Default<span class="tag">&lt;/button&gt;</span>
+                <span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn btn-lg
+                    btn-primary"</span><span class="tag">&gt;</span>Large<span class="tag">&lt;/button&gt;</span>
+            </div>
+
+            <h2 id="forms">Forms</h2>
+            <p>Form elements with consistent styling:</p>
+
+            <div class="demo-box">
+                <h4>Preview</h4>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" placeholder="you@example.com">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Select Option</label>
+                    <select class="form-select">
+                        <option>Option 1</option>
+                        <option>Option 2</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span
+                    class="string">"form-group"</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;label</span> <span class="attr">class</span>=<span
+                    class="string">"form-label"</span><span class="tag">&gt;</span>Email Address<span
+                    class="tag">&lt;/label&gt;</span>
+                <span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="string">"email"</span>
+                <span class="attr">class</span>=<span class="string">"form-input"</span> <span
+                    class="attr">placeholder</span>=<span class="string">"you@example.com"</span><span
+                    class="tag">&gt;</span>
+                <span class="tag">&lt;/div&gt;</span>
+
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span
+                    class="string">"form-group"</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;label</span> <span class="attr">class</span>=<span
+                    class="string">"form-label"</span><span class="tag">&gt;</span>Select Option<span
+                    class="tag">&lt;/label&gt;</span>
+                <span class="tag">&lt;select</span> <span class="attr">class</span>=<span
+                    class="string">"form-select"</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;option&gt;</span>Option 1<span class="tag">&lt;/option&gt;</span>
+                <span class="tag">&lt;/select&gt;</span>
+                <span class="tag">&lt;/div&gt;</span>
+            </div>
+
+            <h2 id="cards">Cards</h2>
+            <p>Card component for content containers:</p>
+
+            <div class="demo-box">
+                <h4>Preview</h4>
+                <div class="card" style="max-width: 300px;">
+                    <div class="card-header">
+                        <h3 class="card-title">Card Title</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Card content goes here. Use cards to group related content.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"card"</span><span
+                    class="tag">&gt;</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span
+                    class="string">"card-header"</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;h3</span> <span class="attr">class</span>=<span
+                    class="string">"card-title"</span><span class="tag">&gt;</span>Card Title<span
+                    class="tag">&lt;/h3&gt;</span>
+                <span class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span
+                    class="string">"card-body"</span><span class="tag">&gt;</span>
+                <span class="tag">&lt;p&gt;</span>Card content goes here.<span class="tag">&lt;/p&gt;</span>
+                <span class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;/div&gt;</span>
+            </div>
+
+            <h2 id="badges">Badges</h2>
+            <p>Badges for status indicators and labels:</p>
+
+            <div class="demo-box">
+                <h4>Preview</h4>
+                <span class="badge badge-primary">Primary</span>
+                <span class="badge badge-success">Success</span>
+                <span class="badge badge-warning">Warning</span>
+                <span class="badge badge-danger">Danger</span>
+                <span class="badge badge-info">Info</span>
+            </div>
+
+            <div class="code-block">
+                <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"badge
+                    badge-primary"</span><span class="tag">&gt;</span>Primary<span class="tag">&lt;/span&gt;</span>
+                <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"badge
+                    badge-success"</span><span class="tag">&gt;</span>Success<span class="tag">&lt;/span&gt;</span>
+                <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"badge
+                    badge-warning"</span><span class="tag">&gt;</span>Warning<span class="tag">&lt;/span&gt;</span>
+                <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"badge
+                    badge-danger"</span><span class="tag">&gt;</span>Danger<span class="tag">&lt;/span&gt;</span>
+            </div>
+
+            <h2 id="alerts">Alerts</h2>
+            <p>Alert boxes for messages:</p>
+
+            <div class="demo-box">
+                <h4>Preview</h4>
+                <div class="alert alert-success">✅ Success message</div>
+                <div class="alert alert-warning">⚠️ Warning message</div>
+                <div class="alert alert-danger">❌ Error message</div>
+                <div class="alert alert-info">ℹ️ Info message</div>
+            </div>
+
+            <div class="code-block">
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"alert
+                    alert-success"</span><span class="tag">&gt;</span>Success message<span
+                    class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"alert
+                    alert-warning"</span><span class="tag">&gt;</span>Warning message<span
+                    class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"alert
+                    alert-danger"</span><span class="tag">&gt;</span>Error message<span class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"alert
+                    alert-info"</span><span class="tag">&gt;</span>Info message<span class="tag">&lt;/div&gt;</span>
+            </div>
+
+            <h2 id="toasts">Toast Notifications</h2>
+            <p>Use the Toast API for notifications:</p>
+
+            <div class="code-block">
+                <span class="comment">// Show different toast types</span>
+                Toast.success(<span class="string">'Operation successful!'</span>);
+                Toast.error(<span class="string">'Something went wrong'</span>);
+                Toast.warning(<span class="string">'Please check your input'</span>);
+                Toast.info(<span class="string">'New update available'</span>);
+
+                <span class="comment">// Custom duration (ms)</span>
+                Toast.success(<span class="string">'Saved!'</span>, 5000);
+            </div>
+
+            <h2 id="chartjs">Chart.js Integration</h2>
+            <p>Charts are powered by Chart.js. Include the library and create charts:</p>
+
+            <div class="code-block">
+                <span class="comment">// Include Chart.js</span>
+                <span class="tag">&lt;script</span> <span class="attr">src</span>=<span
+                    class="string">"/frontend/js/lib/chart.umd.min.js"</span><span
+                    class="tag">&gt;&lt;/script&gt;</span>
+
+                <span class="comment">// Create a chart</span>
+                <span class="keyword">const</span> ctx = document.getElementById(<span class="string">'myChart'</span>);
+                <span class="keyword">new</span> Chart(ctx, {
+                type: <span class="string">'line'</span>,
+                data: {
+                labels: [<span class="string">'Jan'</span>, <span class="string">'Feb'</span>, <span
+                    class="string">'Mar'</span>, <span class="string">'Apr'</span>],
+                datasets: [{
+                label: <span class="string">'Sales'</span>,
+                data: [12, 19, 15, 25],
+                borderColor: <span class="string">'#2563eb'</span>,
+                tension: 0.4
+                }]
+                }
+                });
+            </div>
+
+            <h2 id="chart-examples">Chart Examples</h2>
+            <h3>Line Chart</h3>
+            <div class="code-block">
+                <span class="keyword">new</span> Chart(ctx, {
+                type: <span class="string">'line'</span>,
+                data: {
+                labels: [<span class="string">'Jan'</span>, <span class="string">'Feb'</span>, <span
+                    class="string">'Mar'</span>],
+                datasets: [{
+                label: <span class="string">'Revenue'</span>,
+                data: [1000, 1500, 2000],
+                borderColor: <span class="string">'#2563eb'</span>,
+                backgroundColor: <span class="string">'rgba(37, 99, 235, 0.1)'</span>,
+                fill: <span class="keyword">true</span>,
+                tension: 0.4
+                }]
+                }
+                });
+            </div>
+
+            <h3>Bar Chart</h3>
+            <div class="code-block">
+                <span class="keyword">new</span> Chart(ctx, {
+                type: <span class="string">'bar'</span>,
+                data: {
+                labels: [<span class="string">'Q1'</span>, <span class="string">'Q2'</span>, <span
+                    class="string">'Q3'</span>, <span class="string">'Q4'</span>],
+                datasets: [{
+                label: <span class="string">'Sales'</span>,
+                data: [100, 150, 120, 180],
+                backgroundColor: <span class="string">'#10b981'</span>
+                }]
+                }
+                });
+            </div>
+
+            <h3>Doughnut Chart</h3>
+            <div class="code-block">
+                <span class="keyword">new</span> Chart(ctx, {
+                type: <span class="string">'doughnut'</span>,
+                data: {
+                labels: [<span class="string">'Desktop'</span>, <span class="string">'Mobile'</span>, <span
+                    class="string">'Tablet'</span>],
+                datasets: [{
+                data: [60, 30, 10],
+                backgroundColor: [<span class="string">'#2563eb'</span>, <span class="string">'#10b981'</span>, <span
+                    class="string">'#f59e0b'</span>]
+                }]
+                }
+                });
+            </div>
+
+            <h2 id="auth-api">Authentication API</h2>
+            <p>Use the Auth object for authentication:</p>
+
+            <div class="code-block">
+                <span class="comment">// Check if user is authenticated</span>
+                <span class="keyword">if</span> (Auth.isAuthenticated()) {
+                <span class="comment">// User is logged in</span>
+                }
+
+                <span class="comment">// Get current user</span>
+                <span class="keyword">const</span> user = Auth.getUser();
+                console.log(user.email, user.role);
+
+                <span class="comment">// Login</span>
+                <span class="keyword">await</span> Auth.login(email, password);
+
+                <span class="comment">// Logout</span>
+                Auth.logout();
+
+                <span class="comment">// Get active company</span>
+                <span class="keyword">const</span> company = Auth.getActiveCompany();
+            </div>
+
+            <h2 id="rbac">Role-Based Access Control</h2>
+            <p>Check user roles and permissions:</p>
+
+            <div class="code-block">
+                <span class="comment">// Check if user has role</span>
+                <span class="keyword">if</span> (Auth.hasRole(<span class="string">'admin'</span>)) {
+                <span class="comment">// Show admin features</span>
+                }
+
+                <span class="comment">// Check specific permission</span>
+                <span class="keyword">if</span> (Auth.hasPermission(<span class="string">'users.create'</span>)) {
+                <span class="comment">// Allow user creation</span>
+                }
+
+                <span class="comment">// Require authentication (redirects if not logged in)</span>
+                Auth.requireAuth();
+
+                <span class="comment">// Require specific role</span>
+                Auth.requireRole(<span class="string">'admin'</span>);
+
+                <span class="comment">// CSS classes for role-based visibility</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span
+                    class="string">"admin-only"</span><span class="tag">&gt;</span>Only visible to admins<span
+                    class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;div</span> <span class="attr">class</span>=<span
+                    class="string">"super-admin-only"</span><span class="tag">&gt;</span>Only visible to super
+                admins<span class="tag">&lt;/div&gt;</span>
+            </div>
+
+            <div
+                style="margin-top: 60px; padding: 30px; background: var(--gray-50); border-radius: 12px; text-align: center;">
+                <h3>Need API Documentation?</h3>
+                <p>Check out the interactive Swagger API documentation</p>
+                <a href="/docs" class="btn btn-primary" target="_blank">Open API Docs →</a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Include framework CSS for demos -->
+    <link rel="stylesheet" href="/frontend/css/tokens.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+</body>
+
+</html>

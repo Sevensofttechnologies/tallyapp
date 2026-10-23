@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="manifest" href="manifest.json">
+  <title>Companies - VanillaNext</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/widgets.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+  <link rel="stylesheet" href="css/utils/customizer.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Page-specific styles only */
+  </style>
+</head>
+
+<body>
+  <!-- PWA Banners -->
+  <div id="offline-banner" class="offline-banner">📴 You are offline</div>
+  <div id="install-banner" class="install-banner">
+    <div class="install-banner-content">
+      <div class="install-banner-title">Install VanillaNext</div>
+      <div class="install-banner-text">Add to home screen for quick access</div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="btn btn-sm" onclick="dismissInstallBanner()">Later</button>
+      <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+    </div>
+  </div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div class="admin-layout" id="app">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar">
+      <div class="sidebar-brand">⚡ VanillaNext</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-icon">📊</span> Dashboard</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Management</div>
+        <a href="users.html" class="sidebar-link admin-only"><span class="sidebar-icon">👥</span> Users</a>
+        <a href="audit.html" class="sidebar-link admin-only"><span class="sidebar-icon">🛡️</span> Audit Logs</a>
+        <a href="tally-sync.html" class="sidebar-link"><span class="sidebar-icon">🔄</span> Tally Sync</a>
+        <a href="reports/vouchers.html" class="sidebar-link"><span class="sidebar-icon">📋</span> Reports</a>
+        <a href="companies.html" class="sidebar-link active super-admin-only"><span class="sidebar-icon">🏢</span>
+          Companies</a>
+        <a href="permissions.html" class="sidebar-link super-admin-only"><span class="sidebar-icon">🗝️</span>
+          Permissions</a>
+        <div class="text-xs font-bold text-muted uppercase px-4 mt-4 mb-2">Settings</div>
+        <a href="profile.html" class="sidebar-link"><span class="sidebar-icon">👤</span> Profile</a>
+        <a href="#" onclick="Auth.logout()" class="sidebar-link text-danger mt-auto mb-4"><span
+            class="sidebar-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="p-4 border-t border-gray-200">
+        <a href="profile.html" class="flex items-center gap-3 text-gray-900 hover:text-primary-600 transition">
+          <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold"
+            id="user-initials">U</div>
+          <div class="text-sm">
+            <div class="font-bold" id="user-name">User</div>
+            <div class="text-muted text-xs" id="user-role-display">Role</div>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="flex items-center gap-4">
+          <button class="btn btn-ghost btn-sm lg:hidden" onclick="toggleSidebar()">☰</button>
+          <h2 class="text-lg font-bold">Companies</h2>
+        </div>
+        <div class="flex gap-4 items-center">
+          <a href="tally-sync.html" class="btn btn-primary btn-sm super-admin-only">🔄 Sync from Tally</a>
+          <button id="theme-toggle" data-toggle="theme" class="btn btn-ghost btn-sm">🌙</button>
+        </div>
+      </header>
+
+      <div class="p-4 w-full">
+        <div class="card p-0">
+          <div id="companies-table"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <!-- Create/Edit Company Modal -->
+  <div class="modal" id="modal-company">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-company-title">Create Company</h2>
+      <button class="modal-close" onclick="Modal.close('modal-company')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="company-form">
+        <input type="hidden" id="company-id">
+        <div class="form-group mb-4">
+          <label class="form-label">Company Name *</label>
+          <input type="text" id="company-name" class="form-input" required>
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Description</label>
+          <textarea id="company-description" class="form-input" rows="3"></textarea>
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Address</label>
+          <input type="text" id="company-address" class="form-input">
+        </div>
+        <div class="form-group mb-4">
+          <label class="form-label">Phone</label>
+          <input type="tel" id="company-phone" class="form-input">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-company')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCompany()">Save</button>
+    </div>
+  </div>
+
+  <!-- Company Details Modal -->
+  <div class="modal" id="modal-company-details" style="max-width: 700px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Company Details</h2>
+      <button class="modal-close" onclick="Modal.close('modal-company-details')">&times;</button>
+    </div>
+    <div class="modal-body" id="company-details-content">
+      <div class="text-center p-4">Loading...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-company-details')">Close</button>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script>window.VanillaNext = window.VanillaNext || {};</script>
+  <script src="js/core/Component.js"></script>
+  <script src="js/core/ThemeManager.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/dropdown.js"></script>
+  <script src="js/components/datatable.js"></script>
+
+  <script>
+    // Init Theme
+    if (typeof ThemeManager !== 'undefined') ThemeManager.init();
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    let companiesTable;
+
+    async function loadCompanies() {
+      companiesTable = new DataTable('#companies-table', {
+        columns: [
+          {
+            key: 'name', label: 'Company Name', render: (v, row) => `
+                        <div>
+                        <div style="font-weight: 500;">${v}</div>
+                        <div class="text-muted" style="font-size: 12px;">${row.description || ''}</div>
+                        </div>
+                    `},
+          { key: 'user_count', label: 'Users', render: (v) => v || 0 },
+          {
+            key: 'is_active', label: 'Status', render: (v) =>
+              `<span class="badge badge-${v !== false ? 'success' : 'danger'}">${v !== false ? 'Active' : 'Inactive'}</span>`
+          },
+          { key: 'created_at', label: 'Created', render: (v) => Utils.formatDate(v) },
+          {
+            key: 'actions', label: 'Actions', render: (v, row) => `
+                        <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-sm btn-primary" onclick="viewCompanyDetails('${row.name}')" title="View Details">👁️</button>
+                        <button class="btn btn-sm btn-secondary" onclick="editCompany(${row.id})">✏️</button>
+                        <button class="btn btn-sm btn-danger super-admin-only" onclick="deleteCompany(${row.id})">🗑️</button>
+                        </div>
+                    `},
+        ],
+        perPage: 10,
+        searchable: true,
+        emptyMessage: 'No companies found',
+        classList: {
+          table: 'table w-full',
+          thead: 'bg-surface border-b',
+          tbody: 'text-sm'
+        }
+      });
+
+      companiesTable.setLoading(true);
+
+      try {
+        const response = await API.companies.list();
+        if (response.success && response.data) {
+          companiesTable.setData(response.data);
+        }
+      } catch (error) {
+        Toast.error('Failed to load companies');
+        companiesTable.setData([]);
+      }
+
+      Auth.applyRoleVisibility();
+    }
+
+    function openCreateModal() {
+      document.getElementById('modal-company-title').textContent = 'Create Company';
+      document.getElementById('company-form').reset();
+      document.getElementById('company-id').value = '';
+      Modal.open('modal-company');
+    }
+
+    function editCompany(id) {
+      const company = companiesTable.data.find(c => c.id === id);
+      if (!company) return;
+
+      document.getElementById('modal-company-title').textContent = 'Edit Company';
+      document.getElementById('company-id').value = company.id;
+      document.getElementById('company-name').value = company.name;
+      document.getElementById('company-description').value = company.description || '';
+      document.getElementById('company-address').value = company.address || '';
+      document.getElementById('company-phone').value = company.phone || '';
+      Modal.open('modal-company');
+    }
+
+    async function saveCompany() {
+      const id = document.getElementById('company-id').value;
+      const data = {
+        name: document.getElementById('company-name').value,
+        description: document.getElementById('company-description').value,
+        address: document.getElementById('company-address').value,
+        phone: document.getElementById('company-phone').value
+      };
+
+      if (!data.name) {
+        Toast.error('Company name is required');
+        return;
+      }
+
+      try {
+        if (id) {
+          await API.companies.update(id, data);
+          Toast.success('Company updated successfully');
+        } else {
+          await API.companies.create(data);
+          Toast.success('Company created successfully');
+        }
+        Modal.close('modal-company');
+        loadCompanies();
+      } catch (error) {
+        Toast.error(error.detail || 'Failed to save company');
+      }
+    }
+
+    async function viewCompanyDetails(companyName) {
+      Modal.open('modal-company-details');
+      document.getElementById('company-details-content').innerHTML = '<div class="text-center p-4">Loading...</div>';
+      
+      try {
+        const token = Auth.getToken();
+        const response = await fetch(`/api/v1/tally/company/details?company=${encodeURIComponent(companyName)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        if (data.error) {
+          document.getElementById('company-details-content').innerHTML = `<div class="text-danger p-4">${data.error}</div>`;
+          return;
+        }
+        
+        const html = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="card p-4">
+              <h4 style="font-weight: 600; margin-bottom: 12px; color: #4f46e5;">Basic Info</h4>
+              <div style="font-size: 14px; line-height: 1.8;">
+                <div><strong>Name:</strong> ${data.basic?.name || '-'}</div>
+                <div><strong>GUID:</strong> <span style="font-size: 11px;">${data.basic?.guid || '-'}</span></div>
+                <div><strong>Alter ID:</strong> ${data.basic?.alter_id || '-'}</div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <h4 style="font-weight: 600; margin-bottom: 12px; color: #4f46e5;">Contact</h4>
+              <div style="font-size: 14px; line-height: 1.8;">
+                <div><strong>Email:</strong> ${data.contact?.email || '-'}</div>
+                <div><strong>Mobile:</strong> ${data.contact?.mobile || '-'}</div>
+                <div><strong>Telephone:</strong> ${data.contact?.telephone || '-'}</div>
+                <div><strong>Website:</strong> ${data.contact?.website || '-'}</div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <h4 style="font-weight: 600; margin-bottom: 12px; color: #4f46e5;">Address</h4>
+              <div style="font-size: 14px; line-height: 1.8;">
+                <div><strong>Address:</strong> ${data.address?.full_address || '-'}</div>
+                <div><strong>State:</strong> ${data.address?.state || '-'}</div>
+                <div><strong>Country:</strong> ${data.address?.country || '-'}</div>
+                <div><strong>Pincode:</strong> ${data.address?.pincode || '-'}</div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <h4 style="font-weight: 600; margin-bottom: 12px; color: #4f46e5;">Statutory</h4>
+              <div style="font-size: 14px; line-height: 1.8;">
+                <div><strong>GSTIN:</strong> ${data.statutory?.gstin || '-'}</div>
+                <div><strong>PAN:</strong> ${data.statutory?.pan || '-'}</div>
+                <div><strong>TAN:</strong> ${data.statutory?.tan || '-'}</div>
+                <div><strong>CIN:</strong> ${data.statutory?.cin || '-'}</div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <h4 style="font-weight: 600; margin-bottom: 12px; color: #4f46e5;">Financial Year</h4>
+              <div style="font-size: 14px; line-height: 1.8;">
+                <div><strong>Starting From:</strong> ${data.financial_year?.starting_from || '-'}</div>
+                <div><strong>Books From:</strong> ${data.financial_year?.books_from || '-'}</div>
+              </div>
+            </div>
+            <div class="card p-4">
+              <h4 style="font-weight: 600; margin-bottom: 12px; color: #4f46e5;">Settings</h4>
+              <div style="font-size: 14px; line-height: 1.8;">
+                <div><strong>Currency:</strong> ${data.currency?.symbol || ''} ${data.currency?.name || '-'}</div>
+                <div><strong>Decimal Places:</strong> ${data.currency?.decimal_places || '-'}</div>
+                <div><strong>Maintain Inventory:</strong> ${data.settings?.maintain_inventory || '-'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('company-details-content').innerHTML = html;
+      } catch (error) {
+        document.getElementById('company-details-content').innerHTML = `<div class="text-danger p-4">Failed to load: ${error.message}</div>`;
+      }
+    }
+
+    function deleteCompany(id) {
+      const company = companiesTable.data.find(c => c.id === id);
+      if (!company) return;
+
+      Modal.confirm({
+        title: 'Delete Company',
+        message: `Are you sure you want to delete "${company.name}"? This will also remove all users.`,
+        confirmText: 'Delete',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+          try {
+            await API.companies.delete(id);
+            Toast.success('Company deleted successfully');
+            loadCompanies();
+          } catch (error) {
+            Toast.error('Failed to delete company');
+          }
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!Auth.isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load User Info for Sidebar
+      const user = Auth.getUser();
+      if (user) {
+        document.getElementById('user-name').textContent = `${user.first_name} ${user.last_name}`;
+        document.getElementById('user-role-display').textContent = Utils.capitalize(user.role);
+        document.getElementById('user-initials').textContent = Utils.getInitials(`${user.first_name} ${user.last_name}`);
+      }
+
+      loadCompanies();
+    });
+  </script>
+  <script src="js/pwa-init.js"></script>
+</body>
+
+</html>

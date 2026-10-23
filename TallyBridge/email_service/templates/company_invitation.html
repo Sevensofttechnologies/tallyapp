@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Company Invitation{% endblock %}
+
+{% block header_title %}You're Invited!{% endblock %}
+
+{% block content %}
+<h2>Hello {{ user_name }}!</h2>
+
+<p>You have been invited to join <strong>{{ company_name }}</strong> on Application Starter Kit.</p>
+
+<div style="background: #e7f3ff; border: 1px solid #b3d7ff; border-radius: 5px; padding: 20px; margin: 20px 0; text-align: center;">
+    <p style="margin: 0 0 10px 0; font-size: 18px; color: #004085;">
+        <strong>{{ company_name }}</strong>
+    </p>
+    <p style="margin: 0; color: #004085;">
+        Role: <strong>{{ role|default('Member') }}</strong>
+    </p>
+    {% if invited_by %}
+    <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">
+        Invited by: {{ invited_by }}
+    </p>
+    {% endif %}
+</div>
+
+<p>Click the button below to accept the invitation:</p>
+
+<p style="text-align: center;">
+    <a href="{{ invitation_link }}" class="button">Accept Invitation</a>
+</p>
+
+<p><strong>This invitation will expire in {{ expiry_days|default('7') }} days.</strong></p>
+
+<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+
+<p style="font-size: 12px; color: #666;">
+    If you don't want to join this company, you can safely ignore this email.
+</p>
+
+<p>Best regards,<br>The Application Starter Kit Team</p>
+{% endblock %}

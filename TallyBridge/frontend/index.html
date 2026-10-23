@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.json">
+  <title>AppStarter - Application Framework</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/admin-layout.css">
+  <link rel="stylesheet" href="css/advanced.css">
+  <script src="js/lib/chart.umd.min.js"></script>
+  <script src="js/lib/apexcharts.min.js"></script>
+</head>
+
+<body>
+  <!-- PWA Banners -->
+  <div id="offline-banner" class="offline-banner">
+    ⚠️ You are currently offline. Some features may be limited.
+  </div>
+  <div id="install-banner" class="install-banner">
+    <div class="install-banner-content">
+      <div class="install-banner-title">Install AppStarter</div>
+      <div class="install-banner-text">Install our app for a better experience and offline access!</div>
+    </div>
+    <div class="install-banner-actions">
+      <button class="btn btn-sm btn-outline" onclick="dismissInstallBanner()">Later</button>
+      <button class="btn btn-sm btn-primary" onclick="installPWA()">Install Now</button>
+    </div>
+  </div>
+
+  <!-- Navigation Bar Container (Loaded dynamically) -->
+  <div id="navbar-container"></div>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">🚀 Login to AppStarter</h3>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+        </form>
+        <div id="loginError" class="alert alert-danger" style="display: none; margin-top: 12px;"></div>
+        <p style="text-align: center; margin-top: 16px; color: var(--text-muted);">
+          Don't have an account? <a href="#" onclick="loadPage('register'); return false;">Register</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Company Selection Modal -->
+  <div id="companyModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">🏢 Select Company</h3>
+      </div>
+      <div class="modal-body">
+        <div id="companyList" class="company-list"></div>
+        <div id="companyError" class="alert alert-danger" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <div id="page-content">
+    <!-- Default Home Section (shown immediately) -->
+    <section id="home" class="section active">
+      <div class="home-hero"
+        style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+        <div style="text-align: center; max-width: 800px; padding: 40px;">
+          <h1 style="font-size: 3rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">🚀 AppStarter</h1>
+          <h2 style="font-size: 1.5rem; font-weight: 600; color: #475569; margin-bottom: 24px;">Application Starter Kit
+          </h2>
+          <p style="font-size: 1.1rem; color: #64748b; margin-bottom: 32px; line-height: 1.7;">
+            Build production-ready applications faster with authentication, multi-tenancy,
+            permissions, and beautiful UI components out of the box.
+          </p>
+          <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-lg" onclick="loadPage('login')">Login</button>
+            <button class="btn btn-secondary btn-lg" onclick="loadPage('register')">Register</button>
+          </div>
+          <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-top: 60px;">
+            <div class="card" style="text-align: center; padding: 24px;">
+              <div style="font-size: 2.5rem; margin-bottom: 12px;">🔐</div>
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Authentication</h3>
+              <p style="color: #64748b; font-size: 0.9rem;">JWT auth with login, register, password reset</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 24px;">
+              <div style="font-size: 2.5rem; margin-bottom: 12px;">🏢</div>
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Multi-Tenancy</h3>
+              <p style="color: #64748b; font-size: 0.9rem;">Company management with user roles</p>
+            </div>
+            <a href="#" onclick="loadPage('charts'); return false;" class="card"
+              style="text-align: center; padding: 24px; text-decoration: none; color: inherit; transition: transform 0.2s;">
+              <div style="font-size: 2.5rem; margin-bottom: 12px;">📈</div>
+              <h3 style="font-weight: 600; margin-bottom: 8px;">Charts Library</h3>
+              <p style="color: #64748b; font-size: 0.9rem;">Real-time interactive data visualization with 12+ types</p>
+            </a>
+            <div class="card" style="text-align: center; padding: 24px;">
+              <div style="font-size: 2.5rem; margin-bottom: 12px;">🎨</div>
+              <h3 style="font-weight: 600; margin-bottom: 8px;">UI Components</h3>
+              <p style="color: #64748b; font-size: 0.9rem;">Forms, modals, toasts & more</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Core Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/dropdown.js"></script>
+  <script src="js/chart-data.js"></script>
+  <script src="js/components/charts.js"></script>
+  <script src="js/components/datepicker.js"></script>
+  <script src="js/navigation.js"></script>
+
+  <script>
+    // Initialize app on load
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('%c🚀 AppStarter SPA v1.2.0', 'font-size: 16px; font-weight: bold; color: #2563eb;');
+
+      // Check URL hash for navigation
+      const hash = window.location.hash.slice(1);
+
+      // Check authentication
+      const token = localStorage.getItem('access_token');
+
+      if (token) {
+        // User is logged in
+        await loadNavigation();
+
+        if (hash && hash !== 'home' && hash !== 'login' && hash !== 'register') {
+          loadPage(hash);
+        } else {
+          loadPage('dashboard');
+        }
+      } else {
+        // User not logged in
+        if (hash === 'register') {
+          loadPage('register');
+        } else if (hash && hash !== 'home' && hash !== 'login') {
+          // Trying to access protected page, show login
+          loadPage('login');
+        }
+        // Otherwise show home page (default)
+      }
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        loadPage(hash);
+      }
+    });
+
+    // PWA: Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('✅ Service Worker registered'))
+          .catch(err => console.warn('❌ Service Worker registration failed', err));
+      });
+    }
+  </script>
+</body>
+
+</html>

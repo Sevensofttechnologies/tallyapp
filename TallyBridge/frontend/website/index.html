@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppStarter - Modern Application Framework</title>
+    <link rel="stylesheet" href="/frontend/website/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/frontend/website/" class="nav-logo">
+                <span class="logo-icon">🚀</span>
+                <span class="logo-text">App<span class="logo-highlight">Starter</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="/frontend/website/" class="nav-link active">Home</a></li>
+                <li><a href="/frontend/website/features.html" class="nav-link">Features</a></li>
+                <li><a href="/frontend/website/pricing.html" class="nav-link">Pricing</a></li>
+                <li><a href="/frontend/website/about.html" class="nav-link">About</a></li>
+                <li><a href="/frontend/website/contact.html" class="nav-link">Contact</a></li>
+                <li><a href="/frontend/website/docs.html" class="nav-link">Docs</a></li>
+                <li><a href="/docs" class="nav-link" target="_blank">API</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="/frontend/login.html" class="btn-login">Login</a>
+                <a href="/frontend/register.html" class="btn-signup">Get Started Free</a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">🚀 Open Source Application Framework</div>
+                <h1 class="hero-title">
+                    Build Apps Faster with <span class="gradient-text">AppStarter</span>
+                </h1>
+                <p class="hero-subtitle">
+                    The complete full-stack application starter kit with FastAPI backend, 
+                    modern frontend, authentication, multi-tenancy, and everything you need 
+                    to launch your next project in minutes, not months.
+                </p>
+                <div class="hero-buttons">
+                    <a href="/frontend/register.html" class="btn-primary">
+                        Get Started Free
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                    <a href="https://github.com/your-repo/application-starter-kit" class="btn-secondary" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        View on GitHub
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">Downloads</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">GitHub Stars</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">MIT</span>
+                        <span class="stat-label">License</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="dashboard-preview">
+                    <div class="preview-header">
+                        <div class="preview-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="preview-title">AppStarter Dashboard</span>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-sidebar">
+                            <div class="sidebar-item active">📊 Dashboard</div>
+                            <div class="sidebar-item">👥 Users</div>
+                            <div class="sidebar-item">🏢 Companies</div>
+                            <div class="sidebar-item">🔐 Permissions</div>
+                            <div class="sidebar-item">📈 Analytics</div>
+                        </div>
+                        <div class="preview-main">
+                            <div class="preview-cards">
+                                <div class="preview-card blue">
+                                    <span class="card-icon">👥</span>
+                                    <span class="card-value">1,234</span>
+                                    <span class="card-label">Total Users</span>
+                                </div>
+                                <div class="preview-card green">
+                                    <span class="card-icon">🏢</span>
+                                    <span class="card-value">56</span>
+                                    <span class="card-label">Companies</span>
+                                </div>
+                                <div class="preview-card purple">
+                                    <span class="card-icon">📈</span>
+                                    <span class="card-value">89%</span>
+                                    <span class="card-label">Growth</span>
+                                </div>
+                            </div>
+                            <div class="preview-chart">
+                                <div class="chart-bars">
+                                    <div class="bar" style="height: 60%"></div>
+                                    <div class="bar" style="height: 80%"></div>
+                                    <div class="bar" style="height: 45%"></div>
+                                    <div class="bar" style="height: 90%"></div>
+                                    <div class="bar" style="height: 70%"></div>
+                                    <div class="bar" style="height: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Preview -->
+    <section class="features-preview" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Features</span>
+                <h2 class="section-title">Everything You Need to Build</h2>
+                <p class="section-subtitle">Production-ready features designed to help you launch faster</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Authentication</h3>
+                    <p>JWT-based auth with login, register, password reset, and email verification out of the box.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏢</div>
+                    <h3>Multi-Tenancy</h3>
+                    <p>Built-in company/organization support with user-company relationships and role management.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>RBAC Permissions</h3>
+                    <p>Flexible role-based access control with granular permissions per company.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Dashboard & Charts</h3>
+                    <p>Beautiful dashboard with Chart.js integration, KPI cards, and real-time metrics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <h3>Email Service</h3>
+                    <p>RabbitMQ-based email microservice with templates, retry logic, and dead letter queue.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>UI Components</h3>
+                    <p>Modern component library with forms, modals, toasts, date pickers, and more.</p>
+                </div>
+            </div>
+            <div class="features-cta">
+                <a href="/frontend/website/features.html" class="btn-outline">View All Features →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Quick Start</span>
+                <h2 class="section-title">Up and Running in 3 Steps</h2>
+                <p class="section-subtitle">Get your application running in minutes</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Clone & Install</h3>
+                        <p>Clone the repo and install dependencies with pip</p>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Configure</h3>
+                        <p>Set up your .env file with database and email settings</p>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Launch</h3>
+                        <p>Run uvicorn and your app is live!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Tech Stack</span>
+                <h2 class="section-title">Built with Modern Technologies</h2>
+                <p class="section-subtitle">Industry-standard tools and frameworks</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">⚡</div>
+                    <div class="testimonial-text">
+                        <strong>FastAPI</strong> - High-performance Python web framework with automatic OpenAPI docs
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">🐍</div>
+                        <div class="author-info">
+                            <span class="author-name">Backend</span>
+                            <span class="author-role">Python 3.11+</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">🎨</div>
+                    <div class="testimonial-text">
+                        <strong>Vanilla JS + CSS</strong> - No framework lock-in, pure modern JavaScript with CSS custom properties
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">🌐</div>
+                        <div class="author-info">
+                            <span class="author-name">Frontend</span>
+                            <span class="author-role">ES6+ JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">🗄️</div>
+                    <div class="testimonial-text">
+                        <strong>SQLAlchemy + SQLite/PostgreSQL</strong> - Flexible ORM with support for multiple databases
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">💾</div>
+                        <div class="author-info">
+                            <span class="author-name">Database</span>
+                            <span class="author-role">SQL + Migrations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Build Something Amazing?</h2>
+            <p>Start building your next application with AppStarter today. It's free and open source.</p>
+            <div class="cta-buttons">
+                <a href="/frontend/register.html" class="btn-white btn-large">Get Started Free</a>
+                <a href="https://github.com/your-repo/application-starter-kit" class="btn-primary btn-large" target="_blank">
+                    ⭐ Star on GitHub
+                </a>
+            </div>
+            <p class="cta-note">No credit card required • MIT License • Forever free</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="footer-logo">
+                        <span class="logo-icon">🚀</span>
+                        <span class="logo-text">App<span class="logo-highlight">Starter</span></span>
+                    </a>
+                    <p>The complete full-stack application starter kit for modern web development.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">💼</a>
+                        <a href="#" class="social-link">📺</a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="/frontend/website/features.html">Features</a></li>
+                        <li><a href="/frontend/website/pricing.html">Pricing</a></li>
+                        <li><a href="/docs">Documentation</a></li>
+                        <li><a href="/frontend/components.html">Components</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Getting Started</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Examples</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="/frontend/website/about.html">About</a></li>
+                        <li><a href="/frontend/website/contact.html">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 AppStarter. Open Source under MIT License.</p>
+                <div class="footer-legal">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Navigation Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+            } else {
+                navbar.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

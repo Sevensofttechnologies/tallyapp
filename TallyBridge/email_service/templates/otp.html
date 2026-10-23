@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Your OTP Code{% endblock %}
+
+{% block header_title %}Verification Code{% endblock %}
+
+{% block content %}
+<h2>Hello {{ user_name }}!</h2>
+
+<p>Your one-time verification code is:</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <div style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px 40px; border-radius: 10px;">
+        {{ otp_code }}
+    </div>
+</div>
+
+<p><strong>This code will expire in {{ expiry_minutes|default('10') }} minutes.</strong></p>
+
+<p style="color: #666; font-size: 14px;">
+    If you didn't request this code, please ignore this email or contact support if you have concerns about your account security.
+</p>
+
+<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+
+<p style="font-size: 12px; color: #999;">
+    Do not share this code with anyone. Our team will never ask for your OTP.
+</p>
+
+<p>Best regards,<br>The Application Starter Kit Team</p>
+{% endblock %}

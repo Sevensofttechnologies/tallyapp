@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widgets Library - VanillaNext</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/widgets.css">
+    <link rel="stylesheet" href="css/utils/skeleton.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: var(--bg-body);
+            color: var(--gray-900);
+            font-family: var(--font-sans);
+        }
+
+        .showcase-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="showcase-container">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-bold">🧩 Widgets Library</h1>
+                <p class="text-muted">Interactive dashboard components with live data simulation.</p>
+            </div>
+            <a href="index.html" class="btn btn-secondary">← Back to Kit</a>
+        </div>
+
+        <!-- 1. STATS ROW -->
+        <h3 class="text-xl font-bold mb-6">Live Statistics</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <!-- Revenue -->
+            <div class="card stat-card p-6">
+                <div class="text-muted text-sm font-semibold uppercase mb-2">Total Revenue</div>
+                <div class="text-3xl font-bold mb-2">$<span data-simulate="sales">54,230</span></div>
+                <div class="stat-trend up">
+                    <span>↑ 12%</span>
+                    <span>vs last month</span>
+                </div>
+                <div class="stat-icon-bg">💰</div>
+            </div>
+
+            <!-- Users -->
+            <div class="card stat-card p-6">
+                <div class="text-muted text-sm font-semibold uppercase mb-2">Active Users</div>
+                <div class="text-3xl font-bold mb-2" data-simulate="sales">1,245</div>
+                <div class="stat-trend up">
+                    <span>↑ 5%</span>
+                    <span>this week</span>
+                </div>
+                <div class="stat-icon-bg">👥</div>
+            </div>
+
+            <!-- Bounce Rate -->
+            <div class="card stat-card p-6">
+                <div class="text-muted text-sm font-semibold uppercase mb-2">Bounce Rate</div>
+                <div class="text-3xl font-bold mb-2">42.5%</div>
+                <div class="stat-trend down">
+                    <span>↓ 3%</span>
+                    <span>improved</span>
+                </div>
+                <div class="stat-icon-bg">📉</div>
+            </div>
+
+            <!-- Orders -->
+            <div class="card stat-card p-6 bg-primary text-white">
+                <div class="text-white text-opacity-80 text-sm font-semibold uppercase mb-2">New Orders</div>
+                <div class="text-3xl font-bold mb-2" data-simulate="sales">302</div>
+                <div class="text-sm text-white text-opacity-80">Just updated</div>
+                <div class="stat-icon-bg text-white">📦</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <!-- 2. CHAT WIDGET -->
+            <div class="col-span-1">
+                <h3 class="text-xl font-bold mb-6">Interactive Chat</h3>
+                <div class="chat-widget">
+                    <div class="chat-header">
+                        <div class="user-stack-avatar bg-success text-white">SJ</div>
+                        <div>
+                            <div class="font-bold text-sm">Sarah Jenkins</div>
+                            <div class="text-xs text-success">● Online</div>
+                        </div>
+                    </div>
+                    <div class="chat-body">
+                        <div class="chat-bubble received">Hi! Did you check the new designs?</div>
+                        <div class="chat-bubble sent">Yes, they look amazing! 🔥</div>
+                        <div class="chat-bubble received">Great, let's deploy them.</div>
+                    </div>
+                    <div class="chat-footer">
+                        <input type="text" class="chat-input" placeholder="Type a message...">
+                        <button class="btn btn-primary btn-square btn-rounded btn-send">➔</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. TIMELINE & LISTS -->
+            <div class="col-span-2 space-y-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-6">Activity Timeline</h3>
+                    <div class="card p-6">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot success"></div>
+                                <div class="timeline-time">Just now</div>
+                                <div class="timeline-content">
+                                    <span class="font-bold">Project Deployed</span>
+                                    <p class="text-sm text-muted">Updates to server were successful.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot info"></div>
+                                <div class="timeline-time">2 hours ago</div>
+                                <div class="timeline-content">
+                                    <span class="font-bold">New User Signup</span>
+                                    <div class="user-stack mt-2">
+                                        <img src="https://ui-avatars.com/api/?name=Alex+M&background=random"
+                                            class="user-stack-avatar">
+                                        <span class="text-sm ml-2 text-gray-600">Alex Morgan joined the team.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-time">Yesterday</div>
+                                <div class="timeline-content">
+                                    <span class="font-bold">Weekly Meeting</span>
+                                    <p class="text-sm text-muted">Discussion about Q4 goals.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold mb-6">Product Cards</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="card product-card">
+                            <div class="product-img">🎧</div>
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-bold">Pro Headphones</h4>
+                                    <span class="badge badge-success">$299</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline w-full">Add to Cart</button>
+                            </div>
+                        </div>
+                        <div class="card product-card">
+                            <div class="product-img">⌚</div>
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-bold">Smart Watch</h4>
+                                    <span class="badge badge-primary">$199</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline w-full">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. GALLERY & SKELETONS -->
+        <h3 class="text-xl font-bold mb-6">Gallery & Loading States</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+
+            <!-- Lightbox Gallery -->
+            <div class="card p-6">
+                <h4 class="font-bold mb-4">Image Gallery (Click to Zoom)</h4>
+                <div class="grid grid-cols-3 gap-2">
+                    <img src="https://picsum.photos/200/200?random=1" data-toggle="lightbox"
+                        class="rounded cursor-pointer hover:opacity-80 transition">
+                    <img src="https://picsum.photos/200/200?random=2" data-toggle="lightbox"
+                        class="rounded cursor-pointer hover:opacity-80 transition">
+                    <img src="https://picsum.photos/200/200?random=3" data-toggle="lightbox"
+                        class="rounded cursor-pointer hover:opacity-80 transition">
+                    <img src="https://picsum.photos/200/200?random=4" data-toggle="lightbox"
+                        class="rounded cursor-pointer hover:opacity-80 transition">
+                    <img src="https://picsum.photos/200/200?random=5" data-toggle="lightbox"
+                        class="rounded cursor-pointer hover:opacity-80 transition">
+                    <div class="bg-gray-100 rounded flex items-center justify-center text-muted text-sm font-bold">+12
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skeletons -->
+            <div class="card p-6">
+                <h4 class="font-bold mb-4">Skeleton Loading</h4>
+                <div class="flex gap-4 mb-4">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="skeleton skeleton-title"></div>
+                        <div class="skeleton skeleton-text"></div>
+                    </div>
+                </div>
+                <div class="skeleton skeleton-image mb-2"></div>
+                <div class="skeleton skeleton-text w-3/4"></div>
+            </div>
+        </div>
+
+        <!-- 5. SMART DATA GRID -->
+        <h3 class="text-xl font-bold mb-6">Smart Data Grid</h3>
+        <div class="mb-12">
+            <table class="table" data-component="datatable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#1001</td>
+                        <td>John Doe</td>
+                        <td>2023-10-01</td>
+                        <td>$120.00</td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1002</td>
+                        <td>Jane Smith</td>
+                        <td>2023-10-02</td>
+                        <td>$85.50</td>
+                        <td><span class="badge badge-warning">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1003</td>
+                        <td>Robert Brown</td>
+                        <td>2023-10-03</td>
+                        <td>$210.00</td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1004</td>
+                        <td>Emily Davis</td>
+                        <td>2023-10-04</td>
+                        <td>$45.00</td>
+                        <td><span class="badge badge-danger">Failed</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1005</td>
+                        <td>Michael Wilson</td>
+                        <td>2023-10-05</td>
+                        <td>$320.00</td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1006</td>
+                        <td>Sarah Clark</td>
+                        <td>2023-10-06</td>
+                        <td>$150.00</td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1007</td>
+                        <td>Kevin Lee</td>
+                        <td>2023-10-07</td>
+                        <td>$95.00</td>
+                        <td><span class="badge badge-warning">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>#1008</td>
+                        <td>Lisa Wong</td>
+                        <td>2023-10-08</td>
+                        <td>$1,200.00</td>
+                        <td><span class="badge badge-success">Paid</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core/Component.js"></script>
+    <script src="js/core/ThemeManager.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/components/Widgets.js"></script>
+    <script src="js/components/Lightbox.js"></script>
+    <script src="js/components/DataTable.js"></script>
+</body>
+
+</html>
